@@ -11,66 +11,51 @@
 //#include "player.h"
 
 
-void do_client(sf::TcpListener &listenerForClients, const bool initializing,std::vector<player> &players)
+void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vector<player> &players)
 {
-    int currentAmountOfPlayers=2;
-    sf::TcpSocket TcpSocket;
-    sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
-    std::string cIP=clientIP.sf::IpAddress::toString();
-    sf::IpAddress severIP=sf::IpAddress::getLocalAddress();
-    sf::UdpSocket socket;
+        int currentAmountOfPlayers=2;
+        sf::TcpSocket TcpSocket;
+        sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
+        std::string cIP=clientIP.sf::IpAddress::toString();
+        sf::IpAddress severIP=sf::IpAddress::getLocalAddress();
+        sf::UdpSocket socket;
 
-    sf::Packet playerAssignNumber;
-    sf::Uint16 playerNumberClient=0;
+        sf::Packet playerAssignNumber;
+        sf::Uint16 playerNumberClient=0;
 
-    sf::Packet cIPandPortPacket;
+        sf::Packet cIPandPortPacket;
 
-    sf::TcpSocket tcpSocketClient1;
-    sf::TcpSocket tcpSocketClient2;
+        sf::TcpSocket tcpSocketClient1;
+        sf::TcpSocket tcpSocketClient2;
 
-   // unsigned short port;
-    unsigned short clientPort;
+       // unsigned short port;
+        unsigned short clientPort;
 
-    std::string sIP="10.200.238.45"; //IP hardcoded, needs to change
-    //std::cout << "Enter server ip: ";
-    //std::cin>> sIP;
-    severIP=sIP;
-    std::cout << "set port number: ";
-    std::cin >> clientPort;
-
-    socket.bind(clientPort);
-    //listenerForClient1.listen(clientPort);
-    listenerForClients.listen(clientPort);
-    TcpSocket.connect(severIP,clientPort);
-    cIPandPortPacket<<cIP<<clientPort;
-    TcpSocket.send(cIPandPortPacket);
-
-    sf::Vector2f prevPosition;
-    sf::Vector2f changingPosition;
-    /*sf::RenderWindow window(
-       sf::VideoMode(500, 500),
-       "multiplayer",
-       sf::Style::Titlebar | sf::Style::Close);*/
-   // std::vector<player> player{makePlayers(currentAmountOfPlayers)};
-
-    //window.setFramerateLimit(60);
-    //window.setKeyRepeatEnabled(true);
-    TcpSocket.setBlocking(false);
-    tcpSocketClient1.setBlocking(false);
-    tcpSocketClient2.setBlocking(false);
-    socket.setBlocking(false);
-    bool update =false;
-    /*while(window.isOpen())
-    {
-        sf::Event Event;
-        while(window.pollEvent(Event))
+        std::string sIP="192.168.10.197"; //IP hardcoded, needs to change
+        //std::cout << "Enter server ip: ";
+        //std::cin>> sIP;
+        severIP=sIP;
+        if(initializing==true)
         {
-           if(Event.type == sf::Event::GainedFocus)
-                update=true;
-           if(Event.type == sf::Event::LostFocus)
-               update = false;
+            std::cout << "set port number: ";
+            std::cin >> clientPort;
+            initializing=false;
         }
-*/
+        socket.bind(clientPort);
+        //listenerForClient1.listen(clientPort);
+        listenerForClients.listen(clientPort);
+        TcpSocket.connect(severIP,clientPort);
+        cIPandPortPacket<<cIP<<clientPort;
+        TcpSocket.send(cIPandPortPacket);
+
+        sf::Vector2f prevPosition;
+        sf::Vector2f changingPosition;
+        TcpSocket.setBlocking(false);
+        tcpSocketClient1.setBlocking(false);
+        tcpSocketClient2.setBlocking(false);
+        socket.setBlocking(false);
+        bool update =false;
+
         prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
 
         playerWalking(update, players);
@@ -119,8 +104,6 @@ void do_client(sf::TcpListener &listenerForClients, const bool initializing,std:
         {
             players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
         }
-        //window.clear();
-
     }
 
 
