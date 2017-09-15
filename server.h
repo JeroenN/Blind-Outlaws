@@ -9,8 +9,8 @@
 #include <map>
 #include <conio.h>
 
-std::vector<player> add_new_player(int& amount_players) noexcept;
+std::vector<player> makePlayers(int& amount_players) noexcept;
 void playerWalking(const bool update ,std::vector<player> &players);
-void do_server(std::string &text);
+void do_server(std::string &text, const bool initializing,std::vector<player> &players);
 
 #endif // SERVER_H

@@ -1,7 +1,7 @@
 #include "server.h"
 //#include "player.h"
 
-std::vector<player> add_new_player(int& amount_players) noexcept
+std::vector<player> makePlayers(int& amount_players) noexcept
 {
     std::vector<player> newPlayer;
     for(int i=0; i!= amount_players; ++i)
@@ -43,7 +43,7 @@ void playerWalking(const bool update ,std::vector<player> &players)
         }
     }
 }
-void do_server(std::string &text)
+void do_server(std::string &text,const bool initializing,std::vector<player> &players)
 {
      sf::TcpListener listener;
     /*sf::TcpSocket tcpSocketClient1;
@@ -93,7 +93,7 @@ void do_server(std::string &text)
        sf::VideoMode(500, 500),
        "multiplayer",
        sf::Style::Titlebar | sf::Style::Close);
-    std::vector<player> player{add_new_player(currentAmountOfPlayers)};
+    //std::vector<player> players{makePlayers(currentAmountOfPlayers)};
 
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(true);
@@ -149,8 +149,8 @@ void do_server(std::string &text)
         //}
 
 
-        prevPosition = sf::Vector2f(player[0].getPosX(), player[0].getPosY());
-        if(update)
+        prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
+       /* if(update)
         {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
@@ -176,16 +176,16 @@ void do_server(std::string &text)
                 posYplayer1+=3;
                 player[0].setPlayerPosition(posXplayer1, posYplayer1);
             }
-        }
+        }*/
 
         sf::Packet posPacket;
         if(server==true)
         {
-            if(prevPosition != sf::Vector2f(player[0].getPosX(), player[0].getPosY()))
+            if(prevPosition != sf::Vector2f(players[0].getPosX(), players[0].getPosY()))
             {
                 sf::IpAddress recipient = clientIpReceived;
                 //unsigned short clientPort = port;
-                posPacket<<player[0].getPosX() <<player[0].getPosY();
+                posPacket<<players[0].getPosX() <<players[0].getPosY();
                 for(unsigned i=0; i<vectorClientPorts.size(); ++i)
                 {
                     if (socket.send(posPacket, recipient, vectorClientPorts[i]) != sf::Socket::Done)
@@ -204,12 +204,12 @@ void do_server(std::string &text)
         }
         if(posPacket>>changingPosition.x>>changingPosition.y)//>>playerNumber)
         {
-            player[1].setPlayerPosition(changingPosition.x, changingPosition.y);
+            players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
         }
-        window.clear();
+       /* window.clear();
         for(int i=0; i<static_cast<int>(player.size()); ++i)
         player[i].display(window);
-        window.display();
+        window.display();*/
     }
 
 }
