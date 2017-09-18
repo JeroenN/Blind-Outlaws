@@ -11,6 +11,6 @@
 
 std::vector<player> makePlayers(int& amount_players) noexcept;
 void playerWalking(const bool update ,std::vector<player> &players);
-void do_server(std::string &text, const bool initializing,std::vector<player> &players);
+void do_server(std::string &text, bool &sinitializing,std::vector<player> &players);
 
 #endif // SERVER_H

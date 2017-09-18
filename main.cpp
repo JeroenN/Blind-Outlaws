@@ -31,7 +31,7 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
        // unsigned short port;
         unsigned short clientPort;
 
-        std::string sIP="192.168.10.197"; //IP hardcoded, needs to change
+        std::string sIP="10.200.238.77"; //IP hardcoded, needs to change
         //std::cout << "Enter server ip: ";
         //std::cin>> sIP;
         severIP=sIP;
@@ -40,21 +40,21 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
             std::cout << "set port number: ";
             std::cin >> clientPort;
             initializing=false;
-        }
+
         socket.bind(clientPort);
         //listenerForClient1.listen(clientPort);
         listenerForClients.listen(clientPort);
         TcpSocket.connect(severIP,clientPort);
         cIPandPortPacket<<cIP<<clientPort;
         TcpSocket.send(cIPandPortPacket);
-
+        }
         sf::Vector2f prevPosition;
         sf::Vector2f changingPosition;
         TcpSocket.setBlocking(false);
         tcpSocketClient1.setBlocking(false);
         tcpSocketClient2.setBlocking(false);
         socket.setBlocking(false);
-        bool update =false;
+        bool update = true;
 
         prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
 
@@ -138,7 +138,7 @@ int main()
     */
     int currentAmountOfPlayers=2;
     std::vector<player> players{makePlayers(currentAmountOfPlayers)};
-    bool  update =false;
+    bool  update =true;
     bool initializing= true;
     std::string connectionType ="";
     std::string serverCheck ="server";
@@ -164,14 +164,14 @@ int main()
        sf::Style::Titlebar | sf::Style::Close);
     while(window.isOpen())
     {
-        sf::Event Event;
-        while(window.pollEvent(Event))
+       // sf::Event Event;
+        /*while(window.pollEvent(Event))
         {
            if(Event.type == sf::Event::GainedFocus)
                 update=true;
            if(Event.type == sf::Event::LostFocus)
                update = false;
-        }
+        }*/
         if(connectionType==serverCheckShort || connectionType==serverCheck)
         {
           do_server(text, initializing, players);
