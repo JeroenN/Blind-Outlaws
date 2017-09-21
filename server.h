@@ -10,7 +10,7 @@
 #include <conio.h>
 
 std::vector<player> makePlayers(int& amount_players) noexcept;
-void playerWalking(const bool update ,std::vector<player> &players);
+void playerWalking(const bool update ,std::vector<player> &players, float &posXplayer1,float &posYplayer1);
 void do_server(std::string &text, bool &sinitializing,std::vector<player> &players);
 
 #endif // SERVER_H

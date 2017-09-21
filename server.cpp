@@ -11,10 +11,9 @@ std::vector<player> makePlayers(int& amount_players) noexcept
     return newPlayer;
 }
 
-void playerWalking(const bool update ,std::vector<player> &players)
+void playerWalking(const bool update ,std::vector<player> &players, float &posXplayer1,
+float &posYplayer1)
 {
-    float posXplayer1=0;
-    float posYplayer1=0;
     if(update)
     {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
@@ -45,7 +44,10 @@ void playerWalking(const bool update ,std::vector<player> &players)
 }
 void do_server(std::string &text,bool &initializing,std::vector<player> &players)
 {
-     sf::TcpListener listener;
+    float posXplayer1;
+    float posYplayer1;
+    sf::TcpListener listener;
+    listener.setBlocking(false);
     unsigned short port;
     unsigned short clientPort;
     sf::TcpSocket TcpSocket;
@@ -59,18 +61,19 @@ void do_server(std::string &text,bool &initializing,std::vector<player> &players
     int currentAmountOfPlayers=2;
     sf::Uint16 playerNumber=1;
     std::vector<unsigned short> vectorClientPorts;
-    std::vector<int> vectorPlayers;
     sf::Packet playerAssignNumber;
-    sf::Uint16 playerNumberClient=0;
-
     port =2000;
+
     if(initializing==true)
     {
-        socket.bind(port);
-        text += "server";
-        listener.listen(port);
-        initializing=false;
+         posXplayer1=100;
+         posYplayer1=110;
+         initializing=false;
     }
+    socket.bind(port);
+    text += "server";
+    listener.listen(port);
+
     sf::Vector2f prevPosition;
     sf::Vector2f changingPosition;
 
@@ -79,10 +82,12 @@ void do_server(std::string &text,bool &initializing,std::vector<player> &players
     tcpSocketClient2.setBlocking(false);
     socket.setBlocking(false);
     bool  update =true;
-    playerWalking(update, players);
-        listener.accept(TcpSocket);
+    playerWalking(update, players, posXplayer1, posYplayer1);
+    listener.accept(TcpSocket);
+
         if(TcpSocket.receive(cIPandPortPacket)==sf::Socket::Done)
         {
+            std::cout<<"message received from client";
             if(cIPandPortPacket>>cIP>>clientPort)
             {
                 currentAmountOfPlayers+=1;
@@ -93,23 +98,12 @@ void do_server(std::string &text,bool &initializing,std::vector<player> &players
                 playerNumber+=1;
                 std::cout<<playerNumber<< "\n";
                 playerAssignNumber<<playerNumber;
-                //if(playerNumber==2)
-                //{
-                    std::cout<<"message send to: ";
-                    std::cout<<clientPort <<"\n";
-                    tcpSocketClient1.connect(cIP,clientPort);
-                    tcpSocketClient1.send(playerAssignNumber);
-                //}
-               /* if(playerNumber==3)
-                {
-                    std::cout<<"message send to: ";
-                    std::cout<<clientPort <<"\n";
-                    tcpSocketClient2.connect(cIP,2002);
-                    tcpSocketClient2.send(playerAssignNumber);
-                }*/
+                std::cout<<"message send to: ";
+                std::cout<<clientPort <<"\n";
+                tcpSocketClient1.connect(cIP,clientPort);
+                tcpSocketClient1.send(playerAssignNumber);
             }
         }
-
         prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
 
         sf::Packet posPacket;
@@ -136,8 +130,14 @@ void do_server(std::string &text,bool &initializing,std::vector<player> &players
         {
             players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
         }
-    }
-
+}
+    /* if(playerNumber==3)
+     {
+         std::cout<<"message send to: ";
+         std::cout<<clientPort <<"\n";
+         tcpSocketClient2.connect(cIP,2002);
+         tcpSocketClient2.send(playerAssignNumber);
+     }*/
 
 
 
