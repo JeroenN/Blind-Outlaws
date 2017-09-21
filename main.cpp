@@ -15,6 +15,12 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
 {
         float posXplayer1;
         float posYplayer1;
+        if(initializing==true)
+        {
+             posXplayer1=100;
+             posYplayer1=110;
+             initializing=false;
+        }
         int currentAmountOfPlayers=2;
         sf::TcpSocket TcpSocket;
         sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
@@ -30,6 +36,7 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
         sf::TcpSocket tcpSocketClient1;
         sf::TcpSocket tcpSocketClient2;
 
+
        // unsigned short port;
         unsigned short clientPort;
 
@@ -42,14 +49,14 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
             std::cout << "set port number: ";
             std::cin >> clientPort;
             initializing=false;
-
+        }
         socket.bind(clientPort);
         //listenerForClient1.listen(clientPort);
         listenerForClients.listen(clientPort);
         TcpSocket.connect(severIP,2000);
         cIPandPortPacket<<cIP<<clientPort;
         TcpSocket.send(cIPandPortPacket);
-        }
+        //}
         sf::Vector2f prevPosition;
         sf::Vector2f changingPosition;
         TcpSocket.setBlocking(false);
@@ -60,7 +67,7 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
 
         prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
 
-        playerWalking(update, players,posXplayer1, posYplayer1 );
+        playerWalking(update, players);
 
         sf::Packet posPacket;
 
@@ -73,15 +80,7 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
                     std::cout<<playerNumberClient<< "\n";
                 }
             }
-            /*listenerForClients.accept(tcpSocketClient2);
-            if(tcpSocketClient2.receive(playerAssignNumber)==sf::Socket::Done)
-            {
-                std::cout<<"tcpSocketClient2 received a message! \n";
-                if(playerAssignNumber>>playerNumberClient)
-                {
-                    std::cout<<playerNumberClient<< "\n";
-                }
-            }*/
+
 
 
             if(prevPosition != sf::Vector2f(players[0].getPosX(), players[0].getPosY()))
@@ -104,19 +103,29 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
         }
         if(posPacket>>changingPosition.x>>changingPosition.y)//>>playerNumber)
         {
+            std::cout<<"staph";
             players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
         }
     }
-
+/*listenerForClients.accept(tcpSocketClient2);
+if(tcpSocketClient2.receive(playerAssignNumber)==sf::Socket::Done)
+{
+    std::cout<<"tcpSocketClient2 received a message! \n";
+    if(playerAssignNumber>>playerNumberClient)
+    {
+        std::cout<<playerNumberClient<< "\n";
+    }
+}*/
 
 
 int main()
 {
 
     int currentAmountOfPlayers=2;
+    //for(int i=0; i<3; ++i)
     std::vector<player> players{makePlayers(currentAmountOfPlayers)};
     bool  update =true;
-    bool initializing= true;
+    bool initializing=true;
     std::string connectionType ="";
     std::string serverCheck ="server";
     std::string serverCheckShort ="s";
@@ -140,14 +149,14 @@ int main()
     window.setKeyRepeatEnabled(true);
     while(window.isOpen())
     {
-       // sf::Event Event;
-        /*while(window.pollEvent(Event))
+        sf::Event Event;
+        while(window.pollEvent(Event))
         {
            if(Event.type == sf::Event::GainedFocus)
                 update=true;
            if(Event.type == sf::Event::LostFocus)
                update = false;
-        }*/
+        }
         if(connectionType==serverCheckShort || connectionType==serverCheck)
         {
           do_server(text, initializing, players);
@@ -158,7 +167,9 @@ int main()
         }
         window.clear();
         for(int i=0; i<static_cast<int>(players.size()); ++i)
-        players[i].display(window);
+        {
+            players[i].display(window);
+        }
         window.display();
     }
 }

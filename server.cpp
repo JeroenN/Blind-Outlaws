@@ -11,41 +11,40 @@ std::vector<player> makePlayers(int& amount_players) noexcept
     return newPlayer;
 }
 
-void playerWalking(const bool update ,std::vector<player> &players, float &posXplayer1,
-float &posYplayer1)
+void playerWalking(const bool update ,std::vector<player> &players)
 {
-    if(update)
-    {
+    float posX=players[0].getPosX();
+    float posY=players[0].getPosY();
+    //if(update)
+    //{
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
             || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         {
-                posXplayer1+=3;
-                players[0].setPlayerPosition(posXplayer1, posYplayer1);
+                posX+=3;
+                players[0].setPlayerPosition(posX, posY);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
             || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
         {
-                posXplayer1-=3;
-                players[0].setPlayerPosition(posXplayer1, posYplayer1);
+                posX-=3;
+               players[0].setPlayerPosition(posX, posY);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
             || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
         {
-            posYplayer1-=3;
-            players[0].setPlayerPosition(posXplayer1, posYplayer1);
+            posY-=3;
+            players[0].setPlayerPosition(posX, posY);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
             || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         {
-            posYplayer1+=3;
-            players[0].setPlayerPosition(posXplayer1, posYplayer1);
+            posY+=3;
+            players[0].setPlayerPosition(posX, posY);
         }
-    }
+    //}
 }
 void do_server(std::string &text,bool &initializing,std::vector<player> &players)
 {
-    float posXplayer1;
-    float posYplayer1;
     sf::TcpListener listener;
     listener.setBlocking(false);
     unsigned short port;
@@ -64,12 +63,15 @@ void do_server(std::string &text,bool &initializing,std::vector<player> &players
     sf::Packet playerAssignNumber;
     port =2000;
 
-    if(initializing==true)
+    /*if(initializing==true)
     {
-         posXplayer1=100;
-         posYplayer1=110;
+         players[0].setPlayerPosition(posXplayer1, posYplayer1);
+         //posXplayer1=100;
+         //posYplayer1=110;
          initializing=false;
-    }
+         std::cout<<"initialized";
+
+    }*/
     socket.bind(port);
     text += "server";
     listener.listen(port);
@@ -82,7 +84,10 @@ void do_server(std::string &text,bool &initializing,std::vector<player> &players
     tcpSocketClient2.setBlocking(false);
     socket.setBlocking(false);
     bool  update =true;
-    playerWalking(update, players, posXplayer1, posYplayer1);
+
+    playerWalking(update, players);
+
+    //std::cout<<posXplayer1;
     listener.accept(TcpSocket);
 
         if(TcpSocket.receive(cIPandPortPacket)==sf::Socket::Done)
@@ -128,6 +133,7 @@ void do_server(std::string &text,bool &initializing,std::vector<player> &players
         }
         if(posPacket>>changingPosition.x>>changingPosition.y)//>>playerNumber)
         {
+            std::cout<<"staph";
             players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
         }
 }
