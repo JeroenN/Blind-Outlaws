@@ -11,16 +11,9 @@
 //#include "player.h"
 
 
-void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vector<player> &players)
+void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vector<player> &players, unsigned short &clientPort)
 {
-        float posXplayer1;
-        float posYplayer1;
-        if(initializing==true)
-        {
-             posXplayer1=100;
-             posYplayer1=110;
-             initializing=false;
-        }
+
         int currentAmountOfPlayers=2;
         sf::TcpSocket TcpSocket;
         sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
@@ -38,9 +31,9 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
 
 
        // unsigned short port;
-        unsigned short clientPort;
 
-        std::string sIP="192.168.10.163"; //IP hardcoded, needs to change
+
+        std::string sIP="10.200.236.202"; //IP hardcoded, needs to change
         //std::cout << "Enter server ip: "<< "\n";
         //std::cin>> sIP;
         severIP=sIP;
@@ -48,15 +41,17 @@ void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vect
         {
             std::cout << "set port number: ";
             std::cin >> clientPort;
+            socket.bind(clientPort);
             initializing=false;
-        }
-        socket.bind(clientPort);
+        //std::cout
         //listenerForClient1.listen(clientPort);
-        listenerForClients.listen(clientPort);
-        TcpSocket.connect(severIP,2000);
+            listenerForClients.listen(clientPort);
+            TcpSocket.connect(severIP,2000);
+        }
+        std::cout<<"clientport: "<< clientPort;
         cIPandPortPacket<<cIP<<clientPort;
         TcpSocket.send(cIPandPortPacket);
-        //}
+
         sf::Vector2f prevPosition;
         sf::Vector2f changingPosition;
         TcpSocket.setBlocking(false);
@@ -120,7 +115,7 @@ if(tcpSocketClient2.receive(playerAssignNumber)==sf::Socket::Done)
 
 int main()
 {
-
+    unsigned short clientPort;
     int currentAmountOfPlayers=2;
     //for(int i=0; i<3; ++i)
     std::vector<player> players{makePlayers(currentAmountOfPlayers)};
@@ -163,7 +158,7 @@ int main()
         }
         else
         {
-           do_client(listenerForClients, initializing, players);
+           do_client(listenerForClients, initializing, players, clientPort);
         }
         window.clear();
         for(int i=0; i<static_cast<int>(players.size()); ++i)
