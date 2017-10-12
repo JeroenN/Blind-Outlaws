@@ -10,111 +10,64 @@
 #include "server.h"
 //#include "player.h"
 
-
-void do_client(sf::TcpListener &listenerForClients, bool &initializing,std::vector<player> &players, unsigned short &clientPort)
+void do_client(bool &initializing,std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
 
-        int currentAmountOfPlayers=2;
-        sf::TcpSocket TcpSocket;
-        sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
-        std::string cIP=clientIP.sf::IpAddress::toString();
-        sf::IpAddress severIP=sf::IpAddress::getLocalAddress();
-        sf::UdpSocket socket;
+    sf::IpAddress serverIP="192.168.10.50";
+    sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
+    std::string cIP=clientIP.sf::IpAddress::toString();
 
-        sf::Packet playerAssignNumber;
-        sf::Uint16 playerNumberClient;
+    clientPort=2001;
 
-        sf::Packet cIPandPortPacket;
+    sf::Packet posPacket;
+    sf::UdpSocket socket;
 
-        sf::TcpSocket tcpSocketClient1;
-        sf::TcpSocket tcpSocketClient2;
+    sf::Vector2f changingPosition;
 
+    socket.bind(2001);
 
-       // unsigned short port;
+    socket.setBlocking(false);
+    //client_send_ip_port(cIP, clientPort, serverIP);
 
-
-        std::string sIP="10.200.236.202"; //IP hardcoded, needs to change
-        //std::cout << "Enter server ip: "<< "\n";
-        //std::cin>> sIP;
-        severIP=sIP;
-        if(initializing==true)
-        {
-            std::cout << "set port number: ";
-            std::cin >> clientPort;
-            socket.bind(clientPort);
-            initializing=false;
-        //std::cout
-        //listenerForClient1.listen(clientPort);
-            listenerForClients.listen(clientPort);
-            TcpSocket.connect(severIP,2000);
-        }
-        std::cout<<"clientport: "<< clientPort;
-        cIPandPortPacket<<cIP<<clientPort;
-        TcpSocket.send(cIPandPortPacket);
-
-        sf::Vector2f prevPosition;
-        sf::Vector2f changingPosition;
-        TcpSocket.setBlocking(false);
-        tcpSocketClient1.setBlocking(false);
-        tcpSocketClient2.setBlocking(false);
-        socket.setBlocking(false);
-        bool update = true;
-
-        prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
-
-        playerWalking(update, players);
-
-        sf::Packet posPacket;
-
-            listenerForClients.accept(tcpSocketClient1);
-            if(tcpSocketClient1.receive(playerAssignNumber)==sf::Socket::Done)
-            {
-                std::cout<<"tcpSocketClient1 received a message!  \n";
-                if(playerAssignNumber>>playerNumberClient)
-                {
-                    std::cout<<playerNumberClient<< "\n";
-                }
-            }
-
-
-
-            if(prevPosition != sf::Vector2f(players[0].getPosX(), players[0].getPosY()))
-            {
-                sf::IpAddress recipient = severIP;
-                unsigned short serverPort = 2000;
-                posPacket<<players[0].getPosX() <<players[0].getPosY();//<<playerNumber;
-                if (socket.send(posPacket, recipient, serverPort) != sf::Socket::Done)
-                {
-                    //std::cout<<"whoops... some data wasn't sent";
-                }
-
-            }
-
-        sf::IpAddress sender;
-        unsigned short port;
-        if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
-        {
-            //std::cout<<"whoops... some data wasn't received";
-        }
-        if(posPacket>>changingPosition.x>>changingPosition.y)//>>playerNumber)
-        {
-            std::cout<<"staph";
-            players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
-        }
-    }
-/*listenerForClients.accept(tcpSocketClient2);
-if(tcpSocketClient2.receive(playerAssignNumber)==sf::Socket::Done)
-{
-    std::cout<<"tcpSocketClient2 received a message! \n";
-    if(playerAssignNumber>>playerNumberClient)
+    while(window.isOpen())
     {
-        std::cout<<playerNumberClient<< "\n";
-    }
-}*/
+        sf::Event Event;
+        while(window.pollEvent(Event))
+        {
+           if(Event.type == sf::Event::GainedFocus)
+                update=true;
+           if(Event.type == sf::Event::LostFocus)
+               update = false;
+        }
+    playerWalking(players, update);
 
+    sf::IpAddress recipient = serverIP;
+    unsigned short serverPort = 2000;
+    send_position(recipient, serverPort, players);
+
+    sf::IpAddress sender;
+    unsigned short port;
+    if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
+    {
+        //std::cout<<"whoops... some data wasn't received";
+    }
+
+    if(posPacket>>changingPosition.x>>changingPosition.y)//>>playerNumber)
+    {
+        players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
+    }
+    window.clear();
+           for(int i=0; i<static_cast<int>(players.size()); ++i)
+           {
+               players[i].display(window);
+           }
+           window.display();
+       }
+}
 
 int main()
 {
+    int initializingSeverReceiveFunction=0;
     unsigned short clientPort;
     int currentAmountOfPlayers=2;
     //for(int i=0; i<3; ++i)
@@ -125,11 +78,6 @@ int main()
     std::string serverCheck ="server";
     std::string serverCheckShort ="s";
 
-    sf::TcpListener listenerForClients;
-    listenerForClients.setBlocking(false);
-
-    sf::TcpListener listenerForClient1;
-    listenerForClient1.setBlocking(false);
 
     std::string text = "Connected to: ";
 
@@ -142,7 +90,7 @@ int main()
 
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(true);
-    while(window.isOpen())
+    /*while(window.isOpen())
     {
         sf::Event Event;
         while(window.pollEvent(Event))
@@ -151,20 +99,20 @@ int main()
                 update=true;
            if(Event.type == sf::Event::LostFocus)
                update = false;
-        }
+        }*/
         if(connectionType==serverCheckShort || connectionType==serverCheck)
         {
-          do_server(text, initializing, players);
+          do_server(initializing, players, update,window);
         }
         else
         {
-           do_client(listenerForClients, initializing, players, clientPort);
+           do_client(initializing, players, clientPort, update,window);
         }
-        window.clear();
+       /* window.clear();
         for(int i=0; i<static_cast<int>(players.size()); ++i)
         {
             players[i].display(window);
         }
         window.display();
-    }
+    }*/
 }
