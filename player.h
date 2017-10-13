@@ -39,6 +39,7 @@ public:
     void display(sf::RenderWindow &window)
     {
         window.draw(block);
+
     }
 };
 #endif // PLAYER

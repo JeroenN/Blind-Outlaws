@@ -10,13 +10,23 @@
 #include "server.h"
 //#include "player.h"
 
-void do_client(bool &initializing,std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
+void create_window(const std::string windowName,sf::RenderWindow &window)
 {
+    const sf::Vector2u windowSize{500,500};
+    window.setSize(windowSize);
+    window.setTitle(windowName);
 
-    sf::IpAddress serverIP="192.168.10.50";
+    window.setFramerateLimit(60);
+    window.setKeyRepeatEnabled(true);
+}
+void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
+{
+    sf::Event Event;
+    sf::IpAddress serverIP="192.168.10.95";
     sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
     std::string cIP=clientIP.sf::IpAddress::toString();
-
+    float posXBefore;
+    float posXAfter;
     clientPort=2001;
 
     sf::Packet posPacket;
@@ -27,11 +37,10 @@ void do_client(bool &initializing,std::vector<player> &players, unsigned short &
     socket.bind(2001);
 
     socket.setBlocking(false);
-    //client_send_ip_port(cIP, clientPort, serverIP);
+    client_send_ip_port(cIP, clientPort, serverIP);
 
     while(window.isOpen())
     {
-        sf::Event Event;
         while(window.pollEvent(Event))
         {
            if(Event.type == sf::Event::GainedFocus)
@@ -39,7 +48,9 @@ void do_client(bool &initializing,std::vector<player> &players, unsigned short &
            if(Event.type == sf::Event::LostFocus)
                update = false;
         }
+    //posXBefore = player.getPosX();
     playerWalking(players, update);
+    //posXAfter = player.getPosX();
 
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
@@ -57,20 +68,20 @@ void do_client(bool &initializing,std::vector<player> &players, unsigned short &
         players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
     }
     window.clear();
-           for(int i=0; i<static_cast<int>(players.size()); ++i)
-           {
-               players[i].display(window);
-           }
-           window.display();
+       for(int i=0; i<static_cast<int>(players.size()); ++i)
+       {
+           players[i].display(window);
        }
+       window.display();
+    }
 }
 
 int main()
 {
-    int initializingSeverReceiveFunction=0;
+    std::string clientName = "client";
+    std::string serverName = "server";
     unsigned short clientPort;
     int currentAmountOfPlayers=2;
-    //for(int i=0; i<3; ++i)
     std::vector<player> players{makePlayers(currentAmountOfPlayers)};
     bool  update =true;
     bool initializing=true;
@@ -78,41 +89,19 @@ int main()
     std::string serverCheck ="server";
     std::string serverCheckShort ="s";
 
-
-    std::string text = "Connected to: ";
-
     std::cout <<"Enter (server) for server, Enter (client) for client: \n";
     std::cin >> connectionType;
 
-    sf::RenderWindow window(
-       sf::VideoMode(500, 500),
-       "multiplayer");
+    sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
 
-    window.setFramerateLimit(60);
-    window.setKeyRepeatEnabled(true);
-    /*while(window.isOpen())
-    {
-        sf::Event Event;
-        while(window.pollEvent(Event))
-        {
-           if(Event.type == sf::Event::GainedFocus)
-                update=true;
-           if(Event.type == sf::Event::LostFocus)
-               update = false;
-        }*/
         if(connectionType==serverCheckShort || connectionType==serverCheck)
         {
+          create_window(serverName, window);
           do_server(initializing, players, update,window);
         }
         else
         {
-           do_client(initializing, players, clientPort, update,window);
+           create_window(clientName, window);
+           do_client(players, clientPort, update,window);
         }
-       /* window.clear();
-        for(int i=0; i<static_cast<int>(players.size()); ++i)
-        {
-            players[i].display(window);
-        }
-        window.display();
-    }*/
 }

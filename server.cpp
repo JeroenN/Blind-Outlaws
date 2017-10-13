@@ -6,16 +6,11 @@ void create_draw_and_shoot_bullet(bool &bulletCreated, sf::RenderWindow &window)
     sf::RectangleShape bullet;
      if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
      {
-
-
          bulletCreated=true;
      }
         bullet.setSize(sf::Vector2f(20, 20));
-    //if(bulletCreated==true)
-    //{
         bullet.setPosition(10, 20);
         window.draw(bullet);
-    //}
 }
 
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
@@ -112,6 +107,7 @@ void playerWalking(std::vector<player> &players, bool &update)
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
 {
     bool bulletCreated=false;
+     sf::Event Event;
     sf::Vector2f prevPosition;
     sf::UdpSocket socket;
 
@@ -137,7 +133,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
 
     while(window.isOpen())
     {
-        sf::Event Event;
+
         while(window.pollEvent(Event))
         {
            if(Event.type == sf::Event::GainedFocus)
@@ -157,7 +153,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
 
     sf::IpAddress sender;
     unsigned short port;
-    if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
+    if (socket.receive(posPacket,sender,port) == sf::Socket::Done)
     {
         //std::cout<<"whoops... some data wasn't received";
     }
