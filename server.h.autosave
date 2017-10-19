@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <conio.h>
+
 void draw_everything(sf::RenderWindow &window, std::vector<player> &players, sf::RectangleShape bullet);
 void receive_and_set_other_players_position(sf::UdpSocket &socket, std::vector<player> &players);
 bool player_check_walking(std::vector<player> &players,sf::Vector2f prevPosition);

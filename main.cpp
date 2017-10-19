@@ -22,11 +22,9 @@ void create_window(const std::string windowName,sf::RenderWindow &window)
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
     sf::Event Event;
-    sf::IpAddress serverIP="192.168.10.95";
+    sf::IpAddress serverIP="192.168.10.74";
     sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
     std::string cIP=clientIP.sf::IpAddress::toString();
-    float posXBefore;
-    float posXAfter;
     clientPort=2001;
 
     sf::Packet posPacket;
@@ -48,25 +46,18 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
            if(Event.type == sf::Event::LostFocus)
                update = false;
         }
-    //posXBefore = player.getPosX();
+    sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
     playerWalking(players, update);
-    //posXAfter = player.getPosX();
+
 
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
-    send_position(recipient, serverPort, players);
-
-    sf::IpAddress sender;
-    unsigned short port;
-    if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
+    if(player_check_walking(players, prevPosition)==true)
     {
-        //std::cout<<"whoops... some data wasn't received";
+        send_position(recipient, serverPort, players);
     }
 
-    if(posPacket>>changingPosition.x>>changingPosition.y)//>>playerNumber)
-    {
-        players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
-    }
+    receive_and_set_other_players_position(socket, players);
     window.clear();
        for(int i=0; i<static_cast<int>(players.size()); ++i)
        {
