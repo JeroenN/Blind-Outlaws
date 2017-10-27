@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 #include "player.h"
+#include "bullet.h"
 #include "iostream"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -20,6 +21,7 @@ void create_and_shoot_bullet(bool &bulletCreated, sf::RectangleShape &bullet, fl
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,unsigned short &clientPort);
 void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP);
 std::vector<player> makePlayers(int& amount_players) noexcept;
+std::vector<bullet> makeBullets(int& amount_bullets) noexcept;
 void send_position(sf::IpAddress ip, unsigned short port, std::vector<player> &players);
 void playerWalking(std::vector<player> &players, bool &update);
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window);
