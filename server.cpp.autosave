@@ -154,6 +154,17 @@ std::vector<player> makePlayers(int& amount_players) noexcept
     }
     return newPlayer;
 }
+
+std::vector<bullet> makeBullets(int& amount_bullets) noexcept
+{
+    std::vector<bullet> newBullet;
+    for(int i=0; i!= amount_bullets; ++i)
+    {
+        newBullet.push_back(bullet(30,30,0,0));
+    }
+    return newBullet;
+}
+
 void send_position(sf::IpAddress ip, unsigned short port, std::vector<player> &players)
 {
     std::string playerMessage ="player";
@@ -233,6 +244,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
            if(Event.type == sf::Event::LostFocus)
                update = false;
         }
+
     server_receive_ip_port(TcpSocket, listener, clientPort);
     prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
     playerWalking(players, update);

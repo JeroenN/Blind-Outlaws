@@ -1,5 +1,10 @@
-#ifndef PLAYER
-#define PLAYER
+#ifndef BULLET_H
+#define BULLET_H
+
+#endif // BULLET_H
+
+#ifndef BULLET
+#define BULLET
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -7,14 +12,14 @@
 #include <string>
 #include <map>
 #include <conio.h>
-class player
+class bullet
 {
     sf::RectangleShape block;
 
 public:
-    player(const float height, const float width, const float posX, const float posY);
+    bullet(const float height, const float width, const float posX, const float posY);
 
-    void setPlayerPosition(float posX, float posY)
+    void setBulletPosition(float posX, float posY)
     {
         block.setPosition(sf::Vector2f(posX, posY));
     }
@@ -41,4 +46,4 @@ public:
 
     }
 };
-#endif // PLAYER
+#endif // BULLET

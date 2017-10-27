@@ -5,10 +5,9 @@
 #include <string>
 #include <map>
 #include <conio.h>
-//#include <Packet.hpp>
 #include "player.h"
 #include "server.h"
-//#include "player.h"
+#include "bullet.h"
 
 void create_window(const std::string windowName,sf::RenderWindow &window)
 {
@@ -21,20 +20,27 @@ void create_window(const std::string windowName,sf::RenderWindow &window)
 }
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
+    float bulletX=0;
+    bool bulletCreated=false;
+    sf::RectangleShape bullet;
+
     sf::Event Event;
-    sf::IpAddress serverIP="192.168.10.74";
-    sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
-    std::string cIP=clientIP.sf::IpAddress::toString();
+    const sf::IpAddress serverIP="192.168.10.134";
+    const sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
+    const std::string cIP=clientIP.sf::IpAddress::toString();
     clientPort=2001;
 
-    sf::Packet posPacket;
+    sf::TcpListener listener;
     sf::UdpSocket socket;
-
-    sf::Vector2f changingPosition;
+    sf::TcpSocket messageTypeSocket;
 
     socket.bind(2001);
 
+    listener.listen(clientPort);
     socket.setBlocking(false);
+    listener.setBlocking(false);
+    messageTypeSocket.setBlocking(false);
+
     client_send_ip_port(cIP, clientPort, serverIP);
 
     while(window.isOpen())
@@ -49,6 +55,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
     playerWalking(players, update);
 
+    create_and_shoot_bullet(bulletCreated, bullet, bulletX);
 
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
@@ -57,13 +64,10 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
         send_position(recipient, serverPort, players);
     }
 
-    receive_and_set_other_players_position(socket, players);
-    window.clear();
-       for(int i=0; i<static_cast<int>(players.size()); ++i)
-       {
-           players[i].display(window);
-       }
-       window.display();
+    //receive_tcp_messages(messageTypeSocket, listener);
+    receive_position_packets(socket, players, bullet);
+
+    draw_everything(window, players, bullet);
     }
 }
 
@@ -73,7 +77,9 @@ int main()
     std::string serverName = "server";
     unsigned short clientPort;
     int currentAmountOfPlayers=2;
+    int currentAmountOfBullets=0;
     std::vector<player> players{makePlayers(currentAmountOfPlayers)};
+    std::vector<bullet> bullets{makeBullets(currentAmountOfBullets)};
     bool  update =true;
     bool initializing=true;
     std::string connectionType ="";
