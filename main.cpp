@@ -20,12 +20,12 @@ void create_window(const std::string windowName,sf::RenderWindow &window)
 }
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
+    int currentAmountOfBullets=1;
+    std::vector<bullet> bullets{makeBullets(currentAmountOfBullets)};
     float bulletX=0;
-    bool bulletCreated=false;
-    sf::RectangleShape bullet;
 
     sf::Event Event;
-    const sf::IpAddress serverIP="192.168.10.134";
+    const sf::IpAddress serverIP="192.168.10.70";
     const sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
     const std::string cIP=clientIP.sf::IpAddress::toString();
     clientPort=2001;
@@ -34,7 +34,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     sf::UdpSocket socket;
     sf::TcpSocket messageTypeSocket;
 
-    socket.bind(2001);
+    //socket.bind(2001);
 
     listener.listen(clientPort);
     socket.setBlocking(false);
@@ -55,7 +55,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
     playerWalking(players, update);
 
-    create_and_shoot_bullet(bulletCreated, bullet, bulletX);
+    shoot_bullet(currentAmountOfBullets, bullets, bulletX);
 
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
@@ -65,9 +65,9 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     }
 
     //receive_tcp_messages(messageTypeSocket, listener);
-    receive_position_packets(socket, players, bullet);
+    receive_position_packets(socket, players, bullets);
 
-    draw_everything(window, players, bullet);
+    draw_everything(window, players, bullets);
     }
 }
 
@@ -77,9 +77,7 @@ int main()
     std::string serverName = "server";
     unsigned short clientPort;
     int currentAmountOfPlayers=2;
-    int currentAmountOfBullets=0;
     std::vector<player> players{makePlayers(currentAmountOfPlayers)};
-    std::vector<bullet> bullets{makeBullets(currentAmountOfBullets)};
     bool  update =true;
     bool initializing=true;
     std::string connectionType ="";
