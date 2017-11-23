@@ -4,7 +4,7 @@
 #include <SFML/Network.hpp>
 #include <string>
 #include <map>
-#include <conio.h>
+//#include <conio.h>
 #include "player.h"
 #include "server.h"
 #include "bullet.h"
@@ -25,7 +25,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     float bulletX=0;
 
     sf::Event Event;
-    const sf::IpAddress serverIP="192.168.10.70";
+    const sf::IpAddress serverIP="192.168.10.131";
     const sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
     const std::string cIP=clientIP.sf::IpAddress::toString();
     clientPort=2001;
@@ -34,9 +34,9 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     sf::UdpSocket socket;
     sf::TcpSocket messageTypeSocket;
 
-    //socket.bind(2001);
+    socket.bind(2001);
 
-    listener.listen(clientPort);
+    //listener.listen(clientPort);
     socket.setBlocking(false);
     listener.setBlocking(false);
     messageTypeSocket.setBlocking(false);
@@ -55,7 +55,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
     playerWalking(players, update);
 
-    shoot_bullet(currentAmountOfBullets, bullets, bulletX);
+    //shoot_bullet(currentAmountOfBullets, bullets, bulletX);
 
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
@@ -63,8 +63,6 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     {
         send_position(recipient, serverPort, players);
     }
-
-    //receive_tcp_messages(messageTypeSocket, listener);
     receive_position_packets(socket, players, bullets);
 
     draw_everything(window, players, bullets);

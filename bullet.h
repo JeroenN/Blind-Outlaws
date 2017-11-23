@@ -6,7 +6,7 @@
 #include <SFML/Network.hpp>
 #include <string>
 #include <map>
-#include <conio.h>
+//#include <conio.h>
 class bullet
 {
     sf::RectangleShape block;

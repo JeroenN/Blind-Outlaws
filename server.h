@@ -8,8 +8,9 @@
 #include <SFML/Network.hpp>
 #include <string>
 #include <map>
-#include <conio.h>
+//#include <conio.h>
 
+void receive_bullet_created(sf::Packet bulletPacket, int currentAmountOfBullets);
 void set_player_position(std::vector<player> &players, sf::Packet posPacket);
 void set_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket);
 void send_position_bullet(sf::IpAddress ip, unsigned short port, std::vector<bullet> &bullets);
