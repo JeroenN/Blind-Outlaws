@@ -21,7 +21,7 @@ void create_window(const std::string windowName,sf::RenderWindow &window)
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
     int currentAmountOfBullets=1;
-    std::vector<bullet> bullets{makeBullets(currentAmountOfBullets)};
+
     float bulletX=0;
 
     sf::Event Event;
@@ -52,18 +52,19 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
            if(Event.type == sf::Event::LostFocus)
                update = false;
         }
+    std::vector<bullet> bullets{makeBullets(currentAmountOfBullets)};
     sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
     playerWalking(players, update);
 
-    //shoot_bullet(currentAmountOfBullets, bullets, bulletX);
-
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
+    shoot_bullet(currentAmountOfBullets, bullets, bulletX, recipient, serverPort);
+
     if(player_check_walking(players, prevPosition)==true)
     {
         send_position(recipient, serverPort, players);
     }
-    receive_position_packets(socket, players, bullets);
+    receive_position_packets(socket, players, bullets, currentAmountOfBullets);
 
     draw_everything(window, players, bullets);
     }

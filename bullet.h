@@ -14,7 +14,7 @@ class bullet
 public:
     bullet(const float height, const float width, const float posX, const float posY);
 
-    void setBulletPosition(float posX, float posY)
+    void setBulletPosition(float posX, float posY) noexcept
     {
         block.setPosition(sf::Vector2f(posX, posY));
     }
@@ -35,7 +35,7 @@ public:
         return block.getPosition().y;
     }
 
-    void display(sf::RenderWindow &window)
+    void display(sf::RenderWindow &window) noexcept
     {
         window.draw(block);
 
