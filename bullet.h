@@ -35,6 +35,7 @@ public:
         return block.getPosition().y;
     }
 
+
     void display(sf::RenderWindow &window) noexcept
     {
         window.draw(block);
