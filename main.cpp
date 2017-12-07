@@ -4,6 +4,7 @@
 #include <SFML/Network.hpp>
 #include <string>
 #include <map>
+#include <sstream>
 #include "player.h"
 #include "server.h"
 #include "bullet.h"
@@ -19,7 +20,7 @@ void create_window(const std::string windowName,sf::RenderWindow &window)
 }
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
-    float bulletX=0;
+    std::vector<float> bulletX;
     std::vector<bullet> bullets{};
     sf::Event Event;
     const sf::IpAddress serverIP="192.168.10.131";
@@ -54,7 +55,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
 
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
-    shoot_bullet(bullets, bulletX, recipient, serverPort);
+    shoot_bullet(bullets, bulletX, recipient, serverPort,players);
 
     if(player_check_walking(players, prevPosition)==true)
     {

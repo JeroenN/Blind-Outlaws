@@ -1,15 +1,15 @@
 #include "server.h"
-
+#include <sstream>
 #include <cassert>
 
-void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets)
+void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
 {
     std::string messageType=" ";
     if(bulletPacket>>messageType)
     {
         if(messageType=="bulletCreated")
         {
-            bullets.push_back(bullet(40,40,40,40));
+            bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY()));
         }
     }
 }
@@ -31,13 +31,16 @@ void set_player_position(std::vector<player> &players, sf::Packet posPacket)
 void set_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket)
 {
     sf::Vector2f changingPosition;
-    std::string messageType;
+    std::ostringstream messageType;
+    std::string bulletText="bullet";
+    std::string messageReceived;
 
-    if(posPacket>>changingPosition.x>>changingPosition.y>> messageType)
+    if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
     {
-        if(messageType=="bullet")
+        for(unsigned int i=0; i<bullets.size(); ++i)
         {
-            for(int i=0; i<bullets.size(); ++i)
+            messageType<<bulletText<<i;
+            if(messageType.str()==messageReceived)
             {
                 bullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
             }
@@ -48,15 +51,21 @@ void set_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket)
 void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
                           std::vector<bullet> &bullets)
 {    
-    std::string bulletMessage ="bullet";
+    std::ostringstream bulletMessage;
+    std::string bulletText="bullet";
+
     sf::UdpSocket socket;
     sf::Packet posPacket;
     if(bullets.size()>0)
     {
-        posPacket<<bullets[0].getPosX() << bullets[0].getPosY() << bulletMessage;
-        if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+        for(unsigned int i=0; i<bullets.size(); ++i)
         {
-            //std::cout<<"whoops... some data wasn't sent";
+            bulletMessage<<bulletText<<i;
+            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
+            if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+            {
+                //std::cout<<"whoops... some data wasn't sent";
+            }
         }
     }
 }
@@ -113,13 +122,13 @@ bool player_check_walking(const std::vector<player> &players, sf::Vector2f prevP
 
 
 /// shoot_bullets
-void shoot_bullet(std::vector<bullet> &bullets, float &bulletX, sf::IpAddress &ip, unsigned short &port)
+void shoot_bullet(std::vector<bullet> &bullets, std::vector<float> &bulletX, sf::IpAddress &ip, unsigned short &port, std::vector<player> &players)
 {
-     bulletX+=1;
      sf::Packet posPacket;
+     int bulletSpeed =3;
      if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
      {
-         bullets.push_back(bullet(15,15,20,20));
+         bullets.push_back(bullet(10,10, players[0].getPosX(), players[0].getPosY()));
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
          posPacket<<bulletMessage;
@@ -130,9 +139,12 @@ void shoot_bullet(std::vector<bullet> &bullets, float &bulletX, sf::IpAddress &i
      }
      if(bullets.size()>0)
      {
-        bullets[0].setBulletPosition(bulletX, 20);
+        for(unsigned int i=0; i<bullets.size(); ++i)
+        {
+            bullets[i].setBulletPosition(bullets[i].getPosX()+bulletSpeed, bullets[i].getPosY());
+        }
      }
-     receive_bullet_created(posPacket, bullets);
+     receive_bullet_created(posPacket, bullets, players);
 }
 
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort)
@@ -229,7 +241,7 @@ void playerWalking(std::vector<player> &players, bool &update)
 
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
 {
-    float bulletX=0;
+    std::vector<float> bulletX;
     std::vector<bullet> bullets{};
     sf::Event Event;
     sf::Vector2f prevPosition;
@@ -274,7 +286,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
 
     receive_position_packets(socket, players, bullets);
 
-    shoot_bullet(bullets, bulletX, recipient, clientPort);
+    shoot_bullet(bullets, bulletX, recipient, clientPort,players);
 
     send_position_bullet(recipient, clientPort, bullets);
 
