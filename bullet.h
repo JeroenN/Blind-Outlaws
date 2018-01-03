@@ -35,11 +35,15 @@ public:
         return block.getPosition().y;
     }
 
+    void setSpeed(float speedX, float speedY){
+        int posX = block.getPosition().x;
+        int posY = block.getPosition().y;
+        block.setPosition(sf::Vector2f(posX+speedX, posY+speedY));
+    }
 
     void display(sf::RenderWindow &window) noexcept
     {
         window.draw(block);
-
     }
 };
 #endif // BULLET

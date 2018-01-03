@@ -21,6 +21,8 @@ void create_window(const std::string windowName,sf::RenderWindow &window)
 
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
+    int shooting_dir_x=0;
+    int shooting_dir_y=0;
     int time=0;
     std::vector<bullet> bullets{};
     sf::Event Event;
@@ -54,12 +56,12 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
 
     time+=1;
     const sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
-    playerWalking(players, update, time);
+    playerWalking(players, update, time, shooting_dir_x, shooting_dir_y);
 
     sf::IpAddress recipient = serverIP;
     unsigned short serverPort = 2000;
 
-    shoot_bullet(bullets, recipient, serverPort,players, update, time);
+        shoot_bullet(bullets, recipient, clientPort,players, update, time, shooting_dir_x, shooting_dir_y);
 
 
     if(player_check_walking(players, prevPosition)==true)
