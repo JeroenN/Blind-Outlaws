@@ -2,6 +2,30 @@
 #include <sstream>
 #include <cassert>
 
+void set_shooting_dir(std::vector<int> &shooting_dir)
+{
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    {
+            shooting_dir.push_back(1);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    {
+            shooting_dir.push_back(2);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    {
+            shooting_dir.push_back(3);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+    {
+            shooting_dir.push_back(4);
+    }
+}
+
 
 bool fire_able(int time, int rate_in_seconds)
 {
@@ -175,7 +199,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      {
         for(unsigned int i=0; i<bullets.size(); ++i)
         {
-            bullets[i].setSpeed(shooting_dir_x*bulletSpeed,shooting_dir_y*bulletSpeed);
+            bullets[i].setSpeed(shooting_dir_x*bulletSpeed,shooting_dir_y*-bulletSpeed);
         }
      }
 }
@@ -251,7 +275,6 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, int &s
                     time=0;
                     posX+=30;
                     players[0].setPlayerPosition(posX, posY);
-                    shooting_dir_x=1;
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
@@ -259,7 +282,6 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, int &s
                    time=0;
                     posX-=30;
                    players[0].setPlayerPosition(posX, posY);
-                   shooting_dir_x=-1;
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
@@ -267,7 +289,7 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, int &s
                 time=0;
                 posY-=30;
                 players[0].setPlayerPosition(posX, posY);
-                shooting_dir_y =1;
+
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
@@ -275,15 +297,13 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, int &s
                 time=0;
                 posY+=30;
                 players[0].setPlayerPosition(posX, posY);
-                shooting_dir_y=-1;
             }
         }
 }
 
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
 {
-    int shooting_dir_x=0;
-    int shooting_dir_y=0;
+    std::vector<int> shooting_dir;
     int time=0;
     std::vector<bullet> bullets{};
     sf::Event Event;
@@ -300,20 +320,16 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
 
     sf::TcpSocket TcpSocket;
     sf::TcpListener listener;
-
+    int shooting_dir_x=0;
+    int shooting_dir_y=0;
     listener.listen(2000);
     listener.setBlocking(false);
     TcpSocket.setBlocking(false);
 
     while(window.isOpen())
     {
-        while(window.pollEvent(Event))
-        {
-           if(Event.type == sf::Event::GainedFocus)
-                update=true;
-           if(Event.type == sf::Event::LostFocus)
-               update = false;
-        }
+
+    window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
 
     time+=1;
     server_receive_ip_port(TcpSocket, listener, clientPort);
@@ -326,7 +342,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     {
          send_position(recipient, clientPort, players);
     }
-
+    set_shooting_dir(shooting_dir);
     receive_position_packets(socket, players, bullets);
 
     shoot_bullet(bullets, recipient, clientPort,players, update, time, shooting_dir_x, shooting_dir_y);

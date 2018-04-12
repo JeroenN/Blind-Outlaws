@@ -6,7 +6,9 @@ CONFIG -= qt
 SOURCES += main.cpp \
     server.cpp \
     player.cpp \
-    bullet.cpp
+    bullet.cpp \
+    initializing.cpp \
+    client.cpp
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 LIBS += -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
@@ -19,5 +21,7 @@ DEPENDPATH += C:/SFML/include
 HEADERS += \
     server.h \
     player.h \
-    bullet.h
+    bullet.h \
+    initializing.h \
+    client.h
 

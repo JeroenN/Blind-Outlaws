@@ -2,6 +2,8 @@
 #define SERVER_H
 #include "player.h"
 #include "bullet.h"
+#include "initializing.h"
+#include "client.h"
 #include "iostream"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
