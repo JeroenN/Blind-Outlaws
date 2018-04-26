@@ -10,37 +10,13 @@
 #include "server.h"
 #include "bullet.h"
 #include "initializing.h"
-#include "client.h";
 
-void send_position_client_bullet(const sf::IpAddress ip, const unsigned short port,
-                          std::vector<bullet> &bullets)
-{
-    std::ostringstream bulletMessage;
-    std::string bulletText="bullet";
-
-    //std::vector<sf::Vector2f> bulletPositions;
-
-    sf::UdpSocket socket;
-    sf::Packet posPacket;
-    if(bullets.size()>0)
-    {
-        //packet << static_cast<sf::Uint32>(bullets.size());
-        for (unsigned i=0; i<bullets.size(); i++)
-        {
-            bulletMessage<<bulletText<<i;
-            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
-        }
-        if (socket.send(posPacket, ip, port) != sf::Socket::Done)
-        {
-            //std::cout<<"whoops... some data wasn't sent";
-        }
-    }
-}
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
     int shooting_dir=0;
     int time=0;
-    std::vector<bullet> bullets{};
+    std::vector<bullet> clientBullets{};
+    std::vector<bullet> serverBullets{};
     sf::Event Event;
     const sf::IpAddress serverIP="127.0.0.1"; //Standard server ip
     const sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
@@ -70,17 +46,17 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
         sf::IpAddress recipient = serverIP;
         unsigned short serverPort = 2000;
         set_shooting_dir(shooting_dir);
-        shoot_bullet(bullets, recipient, clientPort,players, update, time, shooting_dir);
+        shoot_bullet(clientBullets, recipient, clientPort,players, update, time, shooting_dir);
 
 
         if(player_check_walking(players, prevPosition)==true)
         {
             send_position(recipient, serverPort, players);
         }
-        send_position_client_bullet(recipient, serverPort, bullets);
+        send_position_bullet(recipient, serverPort, clientBullets);
 
-        receive_position_packets(socket, players, bullets);
+        receive_position_packets(socket, players, serverBullets);
 
-        draw_everything(window, players, bullets);
+        draw_everything(window, players, serverBullets, clientBullets);
     }
 }

@@ -18,7 +18,7 @@ void set_player_position(std::vector<player> &players, sf::Packet posPacket);
 void set_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket);
 void send_position_bullet(const sf::IpAddress ip, const unsigned short port, std::vector<bullet> &bullets);
 void receive_tcp_messages(sf::TcpSocket &socket, sf::TcpListener &listener);
-void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &bullets);
+void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets);
 void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players,
                               std::vector<bullet> &bullets);
 void set_shooting_dir(int &shooting_dir);

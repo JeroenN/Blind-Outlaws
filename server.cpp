@@ -133,14 +133,18 @@ void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
 }
 
 
-void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &bullets)
+void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets)
 {
     window.clear();
 
 
-    for(int i=0; i<static_cast<int>(bullets.size()); ++i)
+    for(int i=0; i<static_cast<int>(clientBullets.size()); ++i)
     {
-       bullets[i].display(window);
+       clientBullets[i].display(window);
+    }
+    for(int i=0; i<static_cast<int>(serverBullets.size()); ++i)
+    {
+       serverBullets[i].display(window);
     }
     for(int i=0; i<static_cast<int>(players.size()); ++i)
     {
@@ -351,7 +355,8 @@ void playerWalking(std::vector<player> &players, bool &update, int &time)
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
 {
     int time=0;
-    std::vector<bullet> bullets{};
+    std::vector<bullet> serverBullets{};
+    std::vector<bullet> clientBullets{};
     sf::Event Event;
     sf::Vector2f prevPosition;
     sf::UdpSocket socket;
@@ -389,12 +394,12 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     }
     set_shooting_dir(shooting_dir);
 
-    receive_position_packets(socket, players, bullets);
+    receive_position_packets(socket, players, clientBullets);
 
-    shoot_bullet(bullets, recipient, clientPort,players, update, time, shooting_dir);
+    shoot_bullet(serverBullets, recipient, clientPort,players, update, time, shooting_dir);
 
-    send_position_bullet(recipient, clientPort, bullets);
+    send_position_bullet(recipient, clientPort, serverBullets);
 
-    draw_everything(window, players, bullets);
+    draw_everything(window, players, serverBullets, clientBullets);
    }
 }
