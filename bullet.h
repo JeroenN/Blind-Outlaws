@@ -10,9 +10,13 @@
 class bullet
 {
     sf::RectangleShape block;
-
+private:
+    float mPosX;
+    float mPosY;
+    const float mSpeedX;
+    const float mSpeedY;
 public:
-    bullet(const float height, const float width, const float posX, const float posY);
+    bullet(const float height, const float width, const float posX, const float posY, const float speedX, const float speedY);
 
     void setBulletPosition(float posX, float posY) noexcept
     {
@@ -35,15 +39,26 @@ public:
         return block.getPosition().y;
     }
 
-    void setSpeed(float speedX, float speedY){
+    void moveBullet(){
         int posX = block.getPosition().x;
         int posY = block.getPosition().y;
-        block.setPosition(sf::Vector2f(posX+speedX, posY+speedY));
+        block.setPosition(sf::Vector2f(posX+mSpeedX, posY+mSpeedY));
+    }
+    
+    float getSpeedX()
+    {
+        return mSpeedX;
+    }
+    
+    float getSpeedY()
+    {
+        return mSpeedY;
     }
 
     void display(sf::RenderWindow &window) noexcept
     {
         window.draw(block);
     }
+
 };
 #endif // BULLET

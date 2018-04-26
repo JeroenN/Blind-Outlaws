@@ -21,15 +21,16 @@ void receive_tcp_messages(sf::TcpSocket &socket, sf::TcpListener &listener);
 void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &bullets);
 void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players,
                               std::vector<bullet> &bullets);
+void set_shooting_dir(int &shooting_dir);
 bool player_check_walking(const std::vector<player> &players, sf::Vector2f prevPosition);
 void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short &port, std::vector<player> &players,
-                  bool &update, int &time, const int shooting_dir_x, const int shooting_dir_y);
+                  bool &update, int &time, const int shooting_dir);
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
                             unsigned short &clientPort);
 void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP);
 std::vector<player> makePlayers(int& amount_players) noexcept;
 void send_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players);
-void playerWalking(std::vector<player> &players, bool &update, int &time, int &shooting_dir_x, int &shooting_dir_y);
+void playerWalking(std::vector<player> &players, bool &update, int &time);
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window);
 
 #endif // SERVER_H
