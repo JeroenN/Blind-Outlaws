@@ -253,7 +253,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      }
 }
 
-void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> vectorClientPorts)
+void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts)
 {
     //sf::TcpSocket TcpSocket;
     sf::Packet cIPandPortPacket;
@@ -285,7 +285,7 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
             clientIpReceived=cIP;
             std::cout<<clientPort<<"\n";
             vectorClientPorts.push_back(clientPort);
-            std::cout<<vectorClientPorts.size() << std::flush;
+           // std::cout<<vectorClientPorts.size() << std::flush;
         }
     }
 }
@@ -321,13 +321,13 @@ void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, c
     sf::Packet posPacket;
     posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
 
-   // for(unsigned i=0; i<ports.size(); ++i)
-    //{
-        //if (socket.send(posPacket, ip, ports[0]) != sf::Socket::Done)
-        //{
+    for(unsigned i=0; i<ports.size(); ++i)
+    {
+        if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
+        {
             //std::cout<<"whoops... some data wasn't sent";
-        //}
-    //}
+        }
+    }
 }
 
 void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
