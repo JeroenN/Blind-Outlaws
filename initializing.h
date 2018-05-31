@@ -19,4 +19,6 @@ std::string user_select_server_or_client();
 void run_server_or_client(std::string const connectionType, sf::RenderWindow &window);
 
 void window_events(sf::RenderWindow &window, sf::Event Event, bool &update);
+
+std::string server_select_spectator_or_player();
 #endif // INITIALIZING_H

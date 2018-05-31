@@ -16,6 +16,7 @@
 
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
+    std::string role = "spectator";
     int shooting_dir=0;
     int timesExcutedCode=0;
     std::vector<bullet> clientBullets{};
@@ -64,6 +65,6 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
 
         receive_position_packets(socket, players, serverBullets);
 
-        draw_everything(window, players, serverBullets, clientBullets);
+        draw_everything(window, players, serverBullets, clientBullets, role);
     }
 }

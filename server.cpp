@@ -132,7 +132,7 @@ void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
 }
 
 
-void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets)
+void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, std::string role)
 {
     window.clear();
 
@@ -145,10 +145,22 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     {
        serverBullets[i].display(window);
     }
-    for(int i=0; i<static_cast<int>(players.size()); ++i)
+
+    if(role == "s" || role =="spectator")
     {
-       players[i].display(window);
+        for(int i=0; i<static_cast<int>(players.size()); ++i)
+        {
+            players[i].display(window);
+        }
     }
+    if(role == "p" || role =="player")
+    {
+        for(int i=0; i<static_cast<int>(players.size()); ++i)
+        {
+            players[i].display(window);
+        }
+    }
+    //Grid
     for(int i=0; i<17; ++i)
     {
         sf::Vertex line[] =
@@ -399,6 +411,7 @@ void playerWalking(std::vector<player> &players, bool &update, int &time)
 
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
 {
+    std::string role ="spectator";
     int time=0;
     bool clientConnecting =false;
     std::vector<bullet> serverBullets{};
@@ -422,6 +435,8 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     listener.listen(2000);
     listener.setBlocking(false);
     TcpSocket.setBlocking(false);
+
+    role = server_select_spectator_or_player();
 
     while(window.isOpen())
     {
@@ -450,6 +465,6 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
 
     send_position_bullet(recipient, clientPort, serverBullets);
 
-    draw_everything(window, players, serverBullets, clientBullets);
+    draw_everything(window, players, serverBullets, clientBullets, role);
    }
 }
