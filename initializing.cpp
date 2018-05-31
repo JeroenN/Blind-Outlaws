@@ -33,6 +33,23 @@ std::string user_select_server_or_client()
     return connectionType;
 }
 
+std::string server_select_spectator_or_player()
+{
+    std::string playerType;
+    std::cout<<"You are placed in team one";
+    std::cout<<"Enter (spectate) to be the spectator, Enter (player) to be the player: \n";
+    std::cin>> playerType;
+
+    while(playerType!="s" && playerType!="spectate" && playerType != "p" && playerType != "player")
+    {
+        std::cout<<"This is an invalid command. \nEnter (spectate) to be the spectator, Enter (player) to be the player: \n";
+        std::cin >> playerType;
+    }
+
+    return playerType;
+
+}
+
 //Program runs the client or the server code based on the previous user choice
 void run_server_or_client(std::string const connectionType, sf::RenderWindow &window)
 {

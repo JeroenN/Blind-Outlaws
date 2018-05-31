@@ -26,7 +26,7 @@ bool player_check_walking(const std::vector<player> &players, sf::Vector2f prevP
 void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short &port, std::vector<player> &players,
                   bool &update, int &time, const int shooting_dir);
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
-                            unsigned short &clientPort);
+                            unsigned short &clientPort, bool &clientConnecting);
 void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP);
 std::vector<player> makePlayers(int& amount_players) noexcept;
 void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players);

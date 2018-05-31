@@ -253,7 +253,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      }
 }
 
-void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts)
+void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts, bool &clientConnecting)
 {
     //sf::TcpSocket TcpSocket;
     sf::Packet cIPandPortPacket;
@@ -268,7 +268,8 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
     {
         if(cIPandPortPacket>>cIP>>clientPort)
         {
-            /*if(vectorClientPorts.size()>1)
+
+        /*     if(vectorClientPorts.size()>1)
             {
                 clientPort+=1;
                 //if (TcpsSocket.send(posPacket, ip, port) != sf::Socket::Done)
@@ -280,6 +281,7 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
             {
                 vectorClientPorts.push_back(clientPort);
             }*/
+            clientConnecting=true;
             currentAmountOfPlayers+=1;
             std::cout<<cIP<<"\n";
             clientIpReceived=cIP;
@@ -288,6 +290,19 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
            // std::cout<<vectorClientPorts.size() << std::flush;
         }
     }
+}
+void send_request_team_role()
+{
+    sf::TcpSocket TcpSocket;
+    sf::Packet team_role;
+    sf::TcpListener listenerForServer;
+    listenerForServer.setBlocking(false);
+
+    //listenerForClients.listen(clientPort);
+    //TcpSocket.connect(serverIP,2000);
+    //cIPandPortPacket<<cIP<<clientPort;
+    //TcpSocket.send(cIPandPortPacket);
+
 }
 
 void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP)
@@ -385,6 +400,7 @@ void playerWalking(std::vector<player> &players, bool &update, int &time)
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
 {
     int time=0;
+    bool clientConnecting =false;
     std::vector<bullet> serverBullets{};
     std::vector<bullet> clientBullets{};
     sf::Event Event;
@@ -413,7 +429,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape, the window closes
 
     time+=1;
-    server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts);
+    server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts, clientConnecting);
 
     //std::cout<<vectorClientPorts.size() << std::flush;
 

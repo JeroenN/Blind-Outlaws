@@ -28,10 +28,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
       /* initialize random seed: */
       srand (time(NULL));
 
-      /* generate secret number between 1 and 10: */
      clientPort = rand() % 99999 + 1000;
-
-    //clientPort=2001;
 
     sf::TcpListener listener;
     sf::UdpSocket socket;
