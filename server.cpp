@@ -49,7 +49,6 @@ void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets
     {
         if(messageType=="bulletCreated")
         {
-            std::cout<<"message received"; std::cout<< std::flush;
             bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY(), speedX, speedY));
         }
     }
@@ -105,7 +104,7 @@ for (int i=0; i!=size; ++i)
   const int e = v[i];
   packet << e;
 }
-  */
+ */
 
 void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
                           std::vector<bullet> &bullets)
@@ -185,7 +184,6 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
         }
         set_player_position(players, posPacket);
 
-        std::cout<<bullets.size();
         set_bullet_position(bullets, posPacket, bulletText);
         receive_bullet_created(posPacket, bullets, players);
     }
@@ -255,14 +253,14 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      }
 }
 
-void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort)
+void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> vectorClientPorts)
 {
     //sf::TcpSocket TcpSocket;
     sf::Packet cIPandPortPacket;
     std::string cIP;
     int currentAmountOfPlayers=2;
+    int currentAmountOfClients=1;
     sf::IpAddress clientIpReceived;
-    std::vector<unsigned short> vectorClientPorts;
 
     listener.accept(TcpSocket);
 
@@ -270,11 +268,24 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
     {
         if(cIPandPortPacket>>cIP>>clientPort)
         {
+            /*if(vectorClientPorts.size()>1)
+            {
+                clientPort+=1;
+                //if (TcpsSocket.send(posPacket, ip, port) != sf::Socket::Done)
+                //{
+                    //std::cout<<"whoops... some data wasn't sent";
+                //}
+            }
+            else
+            {
+                vectorClientPorts.push_back(clientPort);
+            }*/
             currentAmountOfPlayers+=1;
             std::cout<<cIP<<"\n";
             clientIpReceived=cIP;
             std::cout<<clientPort<<"\n";
             vectorClientPorts.push_back(clientPort);
+            std::cout<<vectorClientPorts.size() << std::flush;
         }
     }
 }
@@ -302,12 +313,31 @@ std::vector<player> makePlayers(int& amount_players) noexcept
     return newPlayer;
 }
 
-void send_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
+void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players)
 {
+
     std::string playerMessage ="player";
     sf::UdpSocket socket;
     sf::Packet posPacket;
     posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
+
+   // for(unsigned i=0; i<ports.size(); ++i)
+    //{
+        //if (socket.send(posPacket, ip, ports[0]) != sf::Socket::Done)
+        //{
+            //std::cout<<"whoops... some data wasn't sent";
+        //}
+    //}
+}
+
+void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
+{
+
+    std::string playerMessage ="player";
+    sf::UdpSocket socket;
+    sf::Packet posPacket;
+    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
+
     if (socket.send(posPacket, ip, port) != sf::Socket::Done)
     {
         //std::cout<<"whoops... some data wasn't sent";
@@ -362,6 +392,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     sf::UdpSocket socket;
     unsigned short clientPort;
     socket.bind(2000);
+    std::vector<unsigned short> vectorClientPorts;
 
     sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
     std::string cIP=clientIP.sf::IpAddress::toString();
@@ -379,10 +410,13 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     while(window.isOpen())
     {
 
-    window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
+    window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape, the window closes
 
     time+=1;
-    server_receive_ip_port(TcpSocket, listener, clientPort);
+    server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts);
+
+    //std::cout<<vectorClientPorts.size() << std::flush;
+
     prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
     playerWalking(players, update, time);
 
@@ -390,11 +424,11 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
 
     if(player_check_walking(players, prevPosition)==true)
     {
-         send_position(recipient, clientPort, players);
+         send_player_position(recipient, vectorClientPorts, players);
     }
     set_shooting_dir(shooting_dir);
 
-    receive_position_packets(socket, players, clientBullets);
+    receive_position_packets(socket, players, serverBullets);
 
     shoot_bullet(serverBullets, recipient, clientPort,players, update, time, shooting_dir);
 

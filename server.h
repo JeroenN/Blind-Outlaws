@@ -29,7 +29,9 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
                             unsigned short &clientPort);
 void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP);
 std::vector<player> makePlayers(int& amount_players) noexcept;
-void send_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players);
+void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players);
+
+void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players);
 void playerWalking(std::vector<player> &players, bool &update, int &time);
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window);
 
