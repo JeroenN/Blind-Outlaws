@@ -1,6 +1,8 @@
 #include "server.h"
 #include <sstream>
 #include <cassert>
+#include <algorithm>
+#include <numeric>
 
 void set_shooting_dir(int &shooting_dir)
 {
@@ -25,12 +27,37 @@ void set_shooting_dir(int &shooting_dir)
             shooting_dir=3;
     }
 }
+/*
 
 
-bool fire_able(int time, int rate_in_seconds)
+  std::vector<int> v = {1,2,3,4,5,6};
+  std::swap(v[3], v.back());
+  v.pop_back();
+*/
+void bulletHit(std::vector<bullet> &bullets, std::vector<player> players, const int celSize)
+{
+      int playerCelX =players[0].getPosX()/celSize;
+      int playerCelY = players[0].getPosY()/celSize;
+
+      for(unsigned int i=0; i<bullets.size(); ++i)
+      {
+           int bulletCelX= bullets[i].getPosX()/celSize;
+           int bulletCelY= bullets[i].getPosY()/celSize;
+           if(playerCelX==bulletCelX && playerCelY==bulletCelY)
+           {
+               std::swap(bullets[i], bullets.back());
+               bullets.pop_back();
+               std::cout<<"HIT HIT HIT HIT!!!!!!!!!!!!!!!!!!!!! \n"<<std::flush;
+           }
+      }
+
+
+      //std::pair<int, int> playerGridPos{playerPosX, playerPosY};
+}
+
+bool fire_able(int time)
 {
     time+=1;
-    //rate_in_seconds= rate_in_seconds*60;
     if(time>30)
     {
         return true;
@@ -80,7 +107,7 @@ void set_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,std:
             messageType<<bulletText<<i;
             if(messageType.str()==messageReceived)
             {
-                bullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
+                bullets[i].setBulletPosition(changingPosition.x+10, changingPosition.y+10);
             }
         }
     }
@@ -132,7 +159,7 @@ void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
 }
 
 
-void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, std::string role)
+void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role, const int celSize)
 {
     window.clear();
 
@@ -165,13 +192,13 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     {
         sf::Vertex line[] =
         {
-            sf::Vertex(sf::Vector2f(30*i, 0)),
-            sf::Vertex(sf::Vector2f(30*i, 500))
+            sf::Vertex(sf::Vector2f(celSize*i, 0)),
+            sf::Vertex(sf::Vector2f(celSize*i, 500))
         };
         sf::Vertex line2[] =
         {
-            sf::Vertex(sf::Vector2f(0, 30*i)),
-            sf::Vertex(sf::Vector2f(500, 30*i))
+            sf::Vertex(sf::Vector2f(0, celSize*i)),
+            sf::Vertex(sf::Vector2f(500, celSize*i))
         };
         window.draw(line, 2, sf::Lines);
         window.draw(line2, 2, sf::Lines);
@@ -185,11 +212,9 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
     sf::IpAddress sender;
     unsigned short port;
     sf::Packet posPacket;
-    int j=0;
 
-    while(j<3)
+    for(int i=0; i<3; ++i)
     {
-    j+=1;
         if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
         {
             //std::cout<<"whoops... some data wasn't received";
@@ -242,9 +267,9 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
         break;
     }
      sf::Packet posPacket;
-     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time,2)==true)
+     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true)
      {
-         bullets.push_back(bullet(10,10, players[0].getPosX(), players[0].getPosY(), bulletSpeedX, bulletSpeedY));
+         bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
          posPacket<<bulletMessage;
@@ -271,7 +296,6 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
     sf::Packet cIPandPortPacket;
     std::string cIP;
     int currentAmountOfPlayers=2;
-    int currentAmountOfClients=1;
     sf::IpAddress clientIpReceived;
 
     listener.accept(TcpSocket);
@@ -370,7 +394,7 @@ void send_client_player_position(sf::IpAddress ip, unsigned short port, const st
         //std::cout<<"whoops... some data wasn't sent";
     }
 }
-void playerWalking(std::vector<player> &players, bool &update, int &time)
+void playerWalking(std::vector<player> &players, bool &update, int &time, const int celSize)
 {
     float posX=players[0].getPosX();
     float posY=players[0].getPosY();
@@ -381,21 +405,21 @@ void playerWalking(std::vector<player> &players, bool &update, int &time)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             {
                     time=0;
-                    posX+=30;
+                    posX+=celSize;
                     players[0].setPlayerPosition(posX, posY);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
             {
                    time=0;
-                    posX-=30;
+                    posX-=celSize;
                    players[0].setPlayerPosition(posX, posY);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
             {
                 time=0;
-                posY-=30;
+                posY-=celSize;
                 players[0].setPlayerPosition(posX, posY);
 
             }
@@ -403,7 +427,7 @@ void playerWalking(std::vector<player> &players, bool &update, int &time)
                 || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             {
                 time=0;
-                posY+=30;
+                posY+=celSize;
                 players[0].setPlayerPosition(posX, posY);
             }
         }
@@ -412,7 +436,9 @@ void playerWalking(std::vector<player> &players, bool &update, int &time)
 void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
 {
     std::string role ="spectator";
-    int time=0;
+    const int celSize =30;
+    int timeWalking=10;
+    int timeShooting=30;
     bool clientConnecting =false;
     std::vector<bullet> serverBullets{};
     std::vector<bullet> clientBullets{};
@@ -436,35 +462,37 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     listener.setBlocking(false);
     TcpSocket.setBlocking(false);
 
-    role = server_select_spectator_or_player();
+    role = "s";//server_select_spectator_or_player();
 
     while(window.isOpen())
     {
-
     window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape, the window closes
 
-    time+=1;
+    ++timeWalking;
+    ++timeShooting;
     server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts, clientConnecting);
 
     //std::cout<<vectorClientPorts.size() << std::flush;
 
     prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
-    playerWalking(players, update, time);
+    playerWalking(players, update, timeWalking, celSize);
 
     sf::IpAddress recipient = clientIP;
 
-    if(player_check_walking(players, prevPosition)==true)
+    if(player_check_walking(players, prevPosition))
     {
          send_player_position(recipient, vectorClientPorts, players);
     }
     set_shooting_dir(shooting_dir);
 
-    receive_position_packets(socket, players, serverBullets);
+    receive_position_packets(socket, players, clientBullets);
 
-    shoot_bullet(serverBullets, recipient, clientPort,players, update, time, shooting_dir);
+    shoot_bullet(serverBullets, recipient, clientPort,players, update, timeShooting, shooting_dir);
 
     send_position_bullet(recipient, clientPort, serverBullets);
 
-    draw_everything(window, players, serverBullets, clientBullets, role);
+    bulletHit(clientBullets, players, celSize);
+
+    draw_everything(window, players, serverBullets, clientBullets, role, celSize);
    }
 }

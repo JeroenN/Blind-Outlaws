@@ -13,8 +13,8 @@ class bullet
 private:
     float mPosX;
     float mPosY;
-    const float mSpeedX;
-    const float mSpeedY;
+    float mSpeedX;
+    float mSpeedY;
 public:
     bullet(const float height, const float width, const float posX, const float posY, const float speedX, const float speedY);
 

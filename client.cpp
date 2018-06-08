@@ -18,7 +18,10 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
 {
     std::string role = "spectator";
     int shooting_dir=0;
-    int timesExcutedCode=0;
+    int timeWalking=0;
+    int timeShooting=0;
+    int celSize=30;
+    int lives =3;
     std::vector<bullet> clientBullets{};
     std::vector<bullet> serverBullets{};
     sf::Event Event;
@@ -47,14 +50,15 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
     while(window.isOpen())
     {
         window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
-        timesExcutedCode+=1;
+        timeWalking+=1;
+        timeShooting+=1;
         const sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
-        playerWalking(players, update, timesExcutedCode);
+        playerWalking(players, update, timeWalking, celSize);
 
         sf::IpAddress recipient = serverIP;
         unsigned short serverPort = 2000;
         set_shooting_dir(shooting_dir);
-        shoot_bullet(clientBullets, recipient, clientPort,players, update, timesExcutedCode, shooting_dir);
+        shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
 
 
         if(player_check_walking(players, prevPosition)==true)
@@ -65,6 +69,16 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
 
         receive_position_packets(socket, players, serverBullets);
 
-        draw_everything(window, players, serverBullets, clientBullets, role);
+        bulletHit(serverBullets, players, celSize);
+
+        draw_everything(window, players, serverBullets, clientBullets, role, celSize);
     }
 }
+
+/*
+
+
+  std::vector<int> v = {1,2,3,4,5,6};
+  std::swap(v[3], v.back());
+  v.pop_back();
+*/
