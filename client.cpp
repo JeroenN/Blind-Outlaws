@@ -14,7 +14,7 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
 
-void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
+void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
     std::string role = "spectator";
     int shooting_dir=0;

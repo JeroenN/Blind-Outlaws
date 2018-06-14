@@ -65,7 +65,7 @@ std::pair <std::string,int> user_select_player_type(std::string connectionType)
 }
 
 //Program runs the client or the server code based on the previous user choice
-void run_server_or_client(std::string const connectionType, sf::RenderWindow &window)
+void run_server_or_client(std::string const connectionType, std::pair<std::string,int> playerType, sf::RenderWindow &window)
 {
     unsigned short clientPort;
     int currentAmountOfPlayers=2;
@@ -78,13 +78,13 @@ void run_server_or_client(std::string const connectionType, sf::RenderWindow &wi
     {
       std::string serverName = "server";
       create_window(serverName, window);
-      do_server(initializing, players, update,window);
+      do_server(initializing, players, playerType, update,window);
     }
     else
     {
        std::string clientName = "client";
        create_window(clientName, window);
-       do_client(players, clientPort, update,window);
+       do_client(players, playerType, clientPort, update,window);
     }
 }
 

@@ -182,10 +182,7 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     }
     if(role == "p" || role =="player")
     {
-        for(int i=0; i<static_cast<int>(players.size()); ++i)
-        {
-            players[i].display(window);
-        }
+            players[0].display(window);
     }
     //Grid
     for(int i=0; i<17; ++i)
@@ -433,9 +430,9 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, const 
         }
 }
 
-void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
+void do_server(bool &initializing,std::vector<player> &players,std::pair<std::string,int> playerType, bool &update, sf::RenderWindow &window)
 {
-    std::string role ="spectator";
+    const std::string role =playerType.first;
     const int celSize =30;
     int timeWalking=10;
     int timeShooting=30;
@@ -462,7 +459,7 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     listener.setBlocking(false);
     TcpSocket.setBlocking(false);
 
-    role = "s";//server_select_spectator_or_player();
+    //"s";//server_select_spectator_or_player();
 
     while(window.isOpen())
     {
