@@ -34,6 +34,6 @@ void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, c
 
 void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players);
 void playerWalking(std::vector<player> &players, bool &update, int &time, const int celSize);
-void do_server(bool &initializing,std::vector<player> &players,std::pair<std::string,int> playerType, bool &update, sf::RenderWindow &window);
+void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, bool &update, sf::RenderWindow &window);
 
 #endif // SERVER_H

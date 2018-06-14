@@ -73,12 +73,11 @@ void run_server_or_client(std::string const connectionType, std::pair<std::strin
     std::string serverCheck ="server";
     std::string serverCheckShort ="s";
     bool  update =true;
-    bool initializing=true;
     if(connectionType==serverCheckShort || connectionType==serverCheck)
     {
       std::string serverName = "server";
       create_window(serverName, window);
-      do_server(initializing, players, playerType, update,window);
+      do_server(players, playerType, update,window);
     }
     else
     {
