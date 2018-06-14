@@ -16,7 +16,7 @@
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
-    std::string role = "spectator";
+    const std::string role =playerType.first;
     int shooting_dir=0;
     int timeWalking=0;
     int timeShooting=0;
