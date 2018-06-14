@@ -33,25 +33,39 @@ std::string user_select_server_or_client()
     return connectionType;
 }
 
-std::string server_select_spectator_or_player()
+std::pair <std::string,int> user_select_player_type(std::string connectionType)
 {
-    std::string playerType;
-    std::cout<<"You are placed in team one";
+    std::pair <std::string,int> playerType;
+    std::string playerRole="NULL";
+    int team=0;
+    if(connectionType=="server" || connectionType=="s")
+    {
+        std::cout<<"You are placed in team one \n";
+    }
+    if(connectionType=="client" || connectionType=="c")
+    {
+        std::cout<<"Enter (1) to join team 1, Enter (2) to be the player: \n";
+        std::cin >> team;
+        while(team!=1 && team!=2)
+        {
+            std::cout<<"This is an invalid command. \nEnter (1) to join team 1, Enter (2) to be the player: \n";
+            std::cin >> team;
+        }
+    }
     std::cout<<"Enter (spectate) to be the spectator, Enter (player) to be the player: \n";
-    std::cin>> playerType;
-
-    while(playerType!="s" && playerType!="spectate" && playerType != "p" && playerType != "player")
+    std::cin >> playerRole;
+    while(playerRole!="s" && playerRole!="spectate" && playerRole != "p" && playerRole != "player")
     {
         std::cout<<"This is an invalid command. \nEnter (spectate) to be the spectator, Enter (player) to be the player: \n";
-        std::cin >> playerType;
+        std::cin >> playerRole;
     }
+    playerType = std::make_pair(playerRole, team);
 
     return playerType;
-
 }
 
 //Program runs the client or the server code based on the previous user choice
-void run_server_or_client(std::string const connectionType, sf::RenderWindow &window)
+void run_server_or_client(std::string const connectionType, std::pair<std::string,int> playerType, sf::RenderWindow &window)
 {
     unsigned short clientPort;
     int currentAmountOfPlayers=2;
@@ -59,18 +73,17 @@ void run_server_or_client(std::string const connectionType, sf::RenderWindow &wi
     std::string serverCheck ="server";
     std::string serverCheckShort ="s";
     bool  update =true;
-    bool initializing=true;
     if(connectionType==serverCheckShort || connectionType==serverCheck)
     {
       std::string serverName = "server";
       create_window(serverName, window);
-      do_server(initializing, players, update,window);
+      do_server(players, playerType, update,window);
     }
     else
     {
        std::string clientName = "client";
        create_window(clientName, window);
-       do_client(players, clientPort, update,window);
+       do_client(players, playerType, clientPort, update,window);
     }
 }
 

@@ -182,10 +182,7 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     }
     if(role == "p" || role =="player")
     {
-        for(int i=0; i<static_cast<int>(players.size()); ++i)
-        {
-            players[i].display(window);
-        }
+            players[0].display(window);
     }
     //Grid
     for(int i=0; i<17; ++i)
@@ -206,7 +203,7 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     window.display();
 }
 
-void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
+void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::pair<int, sf::IpAddress> playerPortIp)
 {
     std::string bulletText ="bullet";
     sf::IpAddress sender;
@@ -215,15 +212,22 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
 
     for(int i=0; i<3; ++i)
     {
-        if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
+        if (socket.receive(posPacket,sender,port) == sf::Socket::Done)
         {
+            playerPortIp={port, sender};
+            std::cout<<playerPortIp.second;
             //std::cout<<"whoops... some data wasn't received";
         }
+
         set_player_position(players, posPacket);
 
         set_bullet_position(bullets, posPacket, bulletText);
         receive_bullet_created(posPacket, bullets, players);
     }
+
+}
+void send_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
+{
 
 }
 
@@ -433,9 +437,10 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, const 
         }
 }
 
-void do_server(bool &initializing,std::vector<player> &players, bool &update, sf::RenderWindow &window)
+void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, bool &update, sf::RenderWindow &window)
 {
-    std::string role ="spectator";
+    const std::string role =playerType.first;
+    std::pair<int,sf::IpAddress> playerPortIp;
     const int celSize =30;
     int timeWalking=10;
     int timeShooting=30;
@@ -453,7 +458,6 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     std::string cIP=clientIP.sf::IpAddress::toString();
 
     socket.setBlocking(false);
-    initializing=false;
 
     sf::TcpSocket TcpSocket;
     sf::TcpListener listener;
@@ -462,8 +466,6 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     listener.setBlocking(false);
     TcpSocket.setBlocking(false);
 
-    role = "s";//server_select_spectator_or_player();
-
     while(window.isOpen())
     {
     window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape, the window closes
@@ -471,27 +473,27 @@ void do_server(bool &initializing,std::vector<player> &players, bool &update, sf
     ++timeWalking;
     ++timeShooting;
     server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts, clientConnecting);
-
-    //std::cout<<vectorClientPorts.size() << std::flush;
-
-    prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
-    playerWalking(players, update, timeWalking, celSize);
-
-    sf::IpAddress recipient = clientIP;
-
-    if(player_check_walking(players, prevPosition))
+    if(role =="p" || role =="player")
     {
-         send_player_position(recipient, vectorClientPorts, players);
-    }
-    set_shooting_dir(shooting_dir);
+        prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
+        playerWalking(players, update, timeWalking, celSize);
 
-    receive_position_packets(socket, players, clientBullets);
+        sf::IpAddress recipient = clientIP;
 
-    shoot_bullet(serverBullets, recipient, clientPort,players, update, timeShooting, shooting_dir);
+        if(player_check_walking(players, prevPosition))
+        {
+             send_player_position(recipient, vectorClientPorts, players);
+        }
+        set_shooting_dir(shooting_dir);
 
-    send_position_bullet(recipient, clientPort, serverBullets);
+        shoot_bullet(serverBullets, recipient, clientPort,players, update, timeShooting, shooting_dir);
 
-    bulletHit(clientBullets, players, celSize);
+        send_position_bullet(recipient, clientPort, serverBullets);
+
+        bulletHit(clientBullets, players, celSize);
+     }
+
+        receive_position_packets(socket, players, clientBullets, playerPortIp);
 
     draw_everything(window, players, serverBullets, clientBullets, role, celSize);
    }

@@ -14,14 +14,14 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
 
-void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
+void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
-    std::string role = "spectator";
+    const std::string role =playerType.first;
+    std::pair<int, sf::IpAddress> playerPortIp;
     int shooting_dir=0;
     int timeWalking=0;
     int timeShooting=0;
     int celSize=30;
-    int lives =3;
     std::vector<bullet> clientBullets{};
     std::vector<bullet> serverBullets{};
     sf::Event Event;
@@ -67,7 +67,7 @@ void do_client(std::vector<player> &players, unsigned short &clientPort, bool &u
         }
         send_position_bullet(recipient, serverPort, clientBullets);
 
-        receive_position_packets(socket, players, serverBullets);
+        receive_position_packets(socket, players, serverBullets, playerPortIp);
 
         bulletHit(serverBullets, players, celSize);
 
