@@ -298,6 +298,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts, bool &clientConnecting)
 {
     std::string messageType;
+        std::pair<std::string, int> playerType;
     sf::Packet cIPandPortPacket;
     std::string cIP;
     sf::IpAddress clientIpReceived;
@@ -306,17 +307,31 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
 
     if(TcpSocket.receive(cIPandPortPacket)==sf::Socket::Done)
     {
-        if(cIPandPortPacket>>messageType>>cIP>>clientPort)
+        if(cIPandPortPacket>>messageType)
         {
+            if(messageType=="Port")
+            {
+                std::cout<<"BOOP BEEP BOOP BOOP BEEP!!!!!!!!!!!!"<<std::flush;
+                if(cIPandPortPacket>>playerType.first>>playerType.second)
+                {
+                    std::cout<<"BOOP    " << playerType.first ;
+                }
+            }
+
             if(messageType=="IpPort")
             {
-                std::cout<<"BEEP";
-                clientConnecting=true;
-                std::cout<<"kfdjsalkfdsjlkfjadsklfjds      "<<cIP<<"\n";
-                clientIpReceived=cIP;
-                std::cout<<clientPort<<"\n";
-                vectorClientPorts.push_back(clientPort);
+                std::cout<<"fdskljfsdlakjfdkslajfklsdajkflsdajklfdsajakl";
+                if(cIPandPortPacket>>cIP>>clientPort)
+                {
+                    std::cout<<"BEEP";
+                    clientConnecting=true;
+                    std::cout<<cIP<<"\n";
+                    clientIpReceived=cIP;
+                    std::cout<<clientPort<<"\n";
+                    vectorClientPorts.push_back(clientPort);
+                }
             }
+
         }
     }
 }
@@ -330,14 +345,18 @@ void server_receive_playerType(sf::TcpSocket &TcpSocket, sf::TcpListener &listen
 
     if(TcpSocket.receive(playerTypePacket)==sf::Socket::Done)
     {
-        if(playerTypePacket>>messageType>>playerType.first>>playerType.second)
+        if(playerTypePacket>>messageType);
         {
             if(messageType=="playerType")
             {
+            if(playerTypePacket>>playerType.first>>playerType.second)
+            {
+
                 std::cout<<"BOOP";
             }
-            //std::cout<<"role: "<<playerType.first<<"\n";
-            //std::cout<<"team: "<<playerType.second<<"\n";
+                //std::cout<<"role: "<<playerType.first<<"\n";
+                //std::cout<<"team: "<<playerType.second<<"\n";
+            }
         }
     }
 }
@@ -484,7 +503,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     ++timeWalking;
     ++timeShooting;
     server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts, clientConnecting);
-    server_receive_playerType(TcpSocket, listener);
+    //server_receive_playerType(TcpSocket, listener);
     if(role =="p" || role =="player")
     {
         prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());

@@ -15,7 +15,7 @@
 #include <time.h>
 void client_send_playerType(const std::pair<std::string, int> playerType, const sf::IpAddress serverIP, const unsigned short clientPort)
 {
-    std::string messageType="playerType";
+    std::string messageType="Port";
     sf::TcpSocket TcpSocket;
     sf::Packet playerTypePacket;
     sf::TcpListener listenerForClients;
@@ -26,6 +26,7 @@ void client_send_playerType(const std::pair<std::string, int> playerType, const 
     playerTypePacket<<messageType<<playerType.first<<playerType.second;
     TcpSocket.send(playerTypePacket);
 }
+
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
