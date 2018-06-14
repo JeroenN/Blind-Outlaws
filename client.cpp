@@ -13,6 +13,19 @@
 #include <stdio.h>      /* printf, scanf, puts, NULL */
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
+void client_send_playerType(const std::pair<std::string, int> playerType, const sf::IpAddress serverIP, const unsigned short clientPort)
+{
+    std::string messageType="playerType";
+    sf::TcpSocket TcpSocket;
+    sf::Packet playerTypePacket;
+    sf::TcpListener listenerForClients;
+    listenerForClients.setBlocking(false);
+
+    listenerForClients.listen(clientPort);
+    TcpSocket.connect(serverIP,2000);
+    playerTypePacket<<messageType<<playerType.first<<playerType.second;
+    TcpSocket.send(playerTypePacket);
+}
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
@@ -46,6 +59,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     messageTypeSocket.setBlocking(false);
 
     client_send_ip_port(cIP, clientPort, serverIP);
+    client_send_playerType(playerType, serverIP, clientPort);
 
     while(window.isOpen())
     {
