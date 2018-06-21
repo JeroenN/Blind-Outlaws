@@ -34,6 +34,6 @@ void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<
                                 const std::vector<unsigned short> vectorClientPorts, const bool tcpMessageReceived);
 void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players);
 void playerWalking(std::vector<player> &players, bool &update, int &time, const int celSize);
-void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, bool &update, sf::RenderWindow &window);
+void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, sf::RenderWindow &window);
 
 #endif // SERVER_H

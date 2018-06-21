@@ -481,8 +481,9 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, const 
         }
 }
 
-void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, bool &update, sf::RenderWindow &window)
+void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, sf::RenderWindow &window)
 {
+    bool update=true;
     std::map<int, sf::IpAddress> playerPortIp;
     std::vector<std::pair<std::string, int>> vectorPlayerType;
     const std::string role =playerType.first;

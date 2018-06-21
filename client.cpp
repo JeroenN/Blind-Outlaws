@@ -10,70 +10,10 @@
 #include "server.h"
 #include "bullet.h"
 #include "initializing.h"
-#include <stdio.h>      /* printf, scanf, puts, NULL */
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>
-void client_send_playerType(const std::pair<std::string, int> playerType, const sf::IpAddress serverIP)
+
+void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort, sf::RenderWindow &window)
 {
-    std::string messageType="Port";
-    sf::TcpSocket TcpSocket;
-    sf::Packet playerTypePacket;
-
-    TcpSocket.connect(serverIP,2000);
-    playerTypePacket<<messageType<<playerType.first<<playerType.second;
-    TcpSocket.send(playerTypePacket);
-}
-void receive_tcp_messages(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
-{
-    std::string messageType;
-    sf::Packet tcpPacket;
-
-    listener.accept(TcpSocket);
-    int team;
-    int role;
-
-    if(TcpSocket.receive(tcpPacket)==sf::Socket::Done)
-    {
-        if(tcpPacket>>messageType)
-        {
-            if(messageType=="type_team_1")
-            {
-                if(tcpPacket>>team>>role)
-                {
-                    std::cout<<"amount of players team 1: "<<team << "\n"<<std::flush ;
-                    switch(role)
-                    {
-                        case 1:
-                        std::cout<<"role selected: spectator" << "\n \n"<<std::flush;
-                        break;
-                        case 2:
-                        std::cout<< "role slected: player" << "\n \n"<<std::flush;
-                        break;
-                        case 3:
-                        std::cout<< "role slected: both spectator and player" << "\n \n"<<std::flush;
-                        break;
-                        default:
-                        std::cout<< "an error occurred" << "\n \n"<<std::flush;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP)
-{
-    std::string messageType="IpPort";
-    sf::TcpSocket TcpSocket;
-    sf::Packet cIPandPortPacket;
-
-    TcpSocket.connect(serverIP,2000);
-    cIPandPortPacket<<messageType<<cIP<<clientPort;
-    TcpSocket.send(cIPandPortPacket);
-}
-
-void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
-{
+    bool update=true;
     const std::string role =playerType.first;
     int shooting_dir=0;
     int timeWalking=0;
@@ -82,33 +22,18 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     std::vector<bullet> clientBullets{};
     std::vector<bullet> serverBullets{};
     sf::Event Event;
-    const sf::IpAddress serverIP="127.0.0.1"; //Standard server ip
-    const sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
-    const std::string cIP=clientIP.sf::IpAddress::toString();
+    const sf::IpAddress serverIP="127.0.0.1"; //local server ip, there should be an option to input the server ip.
 
-      /* initialize random seed: */
-      srand (time(NULL));
-
-     clientPort = rand() % 99999 + 1000;
-
-    sf::TcpListener listener;
     sf::UdpSocket socket;
-    sf::TcpSocket TcpSocket;
-
     socket.bind(clientPort);
-
-    listener.listen(clientPort);
     socket.setBlocking(false);
-    listener.setBlocking(false);
-    TcpSocket.setBlocking(false);
 
-
-    client_send_ip_port(cIP, clientPort, serverIP);
-    client_send_playerType(playerType, serverIP);
+    //client_send_ip_port(cIP, clientPort, serverIP);
+    //client_send_playerType(playerType, serverIP);
 
     while(window.isOpen())
     {
-        receive_tcp_messages(TcpSocket, listener);
+        //receive_tcp_messages(TcpSocket, listener);
         window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
         timeWalking+=1;
         timeShooting+=1;

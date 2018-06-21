@@ -12,9 +12,7 @@
 
 int main()
 {
-    std::string connectionType;
-    connectionType=user_select_server_or_client();
-    std::pair<std::string,int> playerType = user_select_player_type(connectionType);
+    std::string connectionType=user_select_server_or_client();
     sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
-    run_server_or_client(connectionType,playerType, window);
+    run_server_or_client(connectionType, window);
 }
