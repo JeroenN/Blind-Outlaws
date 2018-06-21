@@ -18,20 +18,51 @@ void client_send_playerType(const std::pair<std::string, int> playerType, const 
     std::string messageType="Port";
     sf::TcpSocket TcpSocket;
     sf::Packet playerTypePacket;
-    sf::TcpListener listenerForClients;
-    listenerForClients.setBlocking(false);
 
-    listenerForClients.listen(clientPort);
     TcpSocket.connect(serverIP,2000);
     playerTypePacket<<messageType<<playerType.first<<playerType.second;
     TcpSocket.send(playerTypePacket);
 }
+void receive_tcp_messages(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
+{
+    std::string messageType;
+    sf::Packet tcpPacket;
 
+    listener.accept(TcpSocket);
+    int team;
+    int role;
+
+    if(TcpSocket.receive(tcpPacket)==sf::Socket::Done)
+    {
+        if(tcpPacket>>messageType)
+        {
+            if(messageType=="type_team_1")
+            {
+               if(tcpPacket>>team>>role)
+               {
+                   std::cout<<"amount of players team 1: "<<team << "\n"<<std::flush ;
+                   switch(role)
+                   {
+                        case 1:
+                        std::cout<<"role selected: spectator" << "\n \n"<<std::flush;
+                        break;
+                        case 2:
+                        std::cout<< "role slected: player" << "\n \n"<<std::flush;
+                        break;
+                        case 3:
+                        std::cout<< "role slected: both spectator and player" << "\n \n"<<std::flush;
+                        break;
+                   }
+
+               }
+            }
+        }
+    }
+}
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
 {
     const std::string role =playerType.first;
-    std::pair<int, sf::IpAddress> playerPortIp;
     int shooting_dir=0;
     int timeWalking=0;
     int timeShooting=0;
@@ -50,20 +81,22 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
 
     sf::TcpListener listener;
     sf::UdpSocket socket;
-    sf::TcpSocket messageTypeSocket;
+    sf::TcpSocket TcpSocket;
 
     socket.bind(clientPort);
 
-    //listener.listen(clientPort);
+    listener.listen(clientPort);
     socket.setBlocking(false);
     listener.setBlocking(false);
-    messageTypeSocket.setBlocking(false);
+    TcpSocket.setBlocking(false);
+
 
     client_send_ip_port(cIP, clientPort, serverIP);
     client_send_playerType(playerType, serverIP, clientPort);
 
     while(window.isOpen())
     {
+        receive_tcp_messages(TcpSocket, listener);
         window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
         timeWalking+=1;
         timeShooting+=1;
@@ -82,7 +115,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
         }
         send_position_bullet(recipient, serverPort, clientBullets);
 
-        receive_position_packets(socket, players, serverBullets, playerPortIp);
+        receive_position_packets(socket, players, serverBullets);
 
         bulletHit(serverBullets, players, celSize);
 

@@ -203,7 +203,7 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     window.display();
 }
 
-void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::pair<int, sf::IpAddress> playerPortIp)
+void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
 {
 
     std::string bulletText ="bullet";
@@ -225,10 +225,6 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
         set_bullet_position(bullets, posPacket, bulletText);
         receive_bullet_created(posPacket, bullets, players);
     }
-
-}
-void send_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
-{
 
 }
 
@@ -295,10 +291,11 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      }
 }
 
-void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts, bool &clientConnecting)
+void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts,
+                            std::vector<std::pair<std::string, int>> &vectorPlayerType, std::map<int, sf::IpAddress> &playerPortIP, bool &tcpMessageReceived)
 {
     std::string messageType;
-        std::pair<std::string, int> playerType;
+    std::pair<std::string, int> playerType;
     sf::Packet cIPandPortPacket;
     std::string cIP;
     sf::IpAddress clientIpReceived;
@@ -311,30 +308,32 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
         {
             if(messageType=="Port")
             {
-                std::cout<<"BOOP BEEP BOOP BOOP BEEP!!!!!!!!!!!!"<<std::flush;
+                tcpMessageReceived=true;
                 if(cIPandPortPacket>>playerType.first>>playerType.second)
                 {
-                    std::cout<<"BOOP    " << playerType.first ;
+                    std::cout<<"role: "<<playerType.first<<std::flush << "\n";
+                    std::cout<<"team: "<<playerType.second<<std::flush << "\n \n";
+                    vectorPlayerType.push_back(std::make_pair(playerType.first, playerType.second));
                 }
             }
 
             if(messageType=="IpPort")
             {
-                std::cout<<"fdskljfsdlakjfdkslajfklsdajkflsdajklfdsajakl";
+                tcpMessageReceived=true;
                 if(cIPandPortPacket>>cIP>>clientPort)
                 {
-                    std::cout<<"BEEP";
-                    clientConnecting=true;
                     std::cout<<cIP<<"\n";
                     clientIpReceived=cIP;
                     std::cout<<clientPort<<"\n";
                     vectorClientPorts.push_back(clientPort);
+                    //playerPortIP.insert(clientPort, clientIpReceived);
                 }
             }
 
         }
     }
 }
+/*
 void server_receive_playerType(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
 {
     std::string messageType;
@@ -360,18 +359,46 @@ void server_receive_playerType(sf::TcpSocket &TcpSocket, sf::TcpListener &listen
         }
     }
 }
-void send_request_team_role()
+*/
+void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<std::pair<std::string, int>> vectorPlayerType, const std::vector<unsigned short> vectorClientPorts,
+                                const bool tcpMessageReceived)
 {
-    sf::TcpSocket TcpSocket;
-    sf::Packet team_role;
-    sf::TcpListener listenerForServer;
-    listenerForServer.setBlocking(false);
+    for(unsigned int i=0; i<vectorPlayerType.size(); ++i)
+    {
+            int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
+            int spectator=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
+            int player=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
+            int roleTeam1 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
+            sf::TcpSocket TcpSocket;
+            sf::Packet playerTypePacket;
 
-    //listenerForClients.listen(clientPort);
-    //TcpSocket.connect(serverIP,2000);
-    //cIPandPortPacket<<cIP<<clientPort;
-    //TcpSocket.send(cIPandPortPacket);
+            if(vectorPlayerType[i].second == 1)
+            {
+                std::string messageType="type_team_1";
+                m_playersTeam1+=1;
+                if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
+                {
+                  spectator=1;
+                }
+                if(vectorPlayerType[i].first =="s" || vectorPlayerType[i].first =="spectator")
+                {
+                  player=2;
+                }
+                //assert(m_playersTeam1>!2);
 
+                roleTeam1=spectator+player;
+                if(tcpMessageReceived==true)
+                {
+                    for(unsigned int j=0; j<vectorClientPorts.size(); ++j)
+                    {
+                            TcpSocket.connect(clientIP, vectorClientPorts[j]);
+                            std::cout<<"ports: " << vectorClientPorts[j] << "\n \n";
+                            playerTypePacket<<messageType<<m_playersTeam1<<roleTeam1;
+                            TcpSocket.send(playerTypePacket);
+                    }
+                }
+            }
+      }
 }
 
 void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP)
@@ -379,10 +406,7 @@ void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddre
     std::string messageType="IpPort";
     sf::TcpSocket TcpSocket;
     sf::Packet cIPandPortPacket;
-    sf::TcpListener listenerForClients;
-    listenerForClients.setBlocking(false);
 
-    listenerForClients.listen(clientPort);
     TcpSocket.connect(serverIP,2000);
     cIPandPortPacket<<messageType<<cIP<<clientPort;
     TcpSocket.send(cIPandPortPacket);
@@ -469,12 +493,13 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, const 
 
 void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, bool &update, sf::RenderWindow &window)
 {
+    std::map<int, sf::IpAddress> playerPortIp;
+    std::vector<std::pair<std::string, int>> vectorPlayerType;
     const std::string role =playerType.first;
-    std::pair<int,sf::IpAddress> playerPortIp;
     const int celSize =30;
     int timeWalking=10;
     int timeShooting=30;
-    bool clientConnecting =false;
+
     std::vector<bullet> serverBullets{};
     std::vector<bullet> clientBullets{};
     sf::Event Event;
@@ -502,8 +527,10 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
 
     ++timeWalking;
     ++timeShooting;
-    server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts, clientConnecting);
-    //server_receive_playerType(TcpSocket, listener);
+    bool tcpMessageReceived=false;
+    server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts, vectorPlayerType, playerPortIp, tcpMessageReceived);
+    send_which_team_role_taken(clientIP,vectorPlayerType,vectorClientPorts, tcpMessageReceived);
+
     if(role =="p" || role =="player")
     {
         prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
@@ -524,7 +551,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
         bulletHit(clientBullets, players, celSize);
      }
 
-        receive_position_packets(socket, players, clientBullets, playerPortIp);
+    receive_position_packets(socket, players, clientBullets);
 
     draw_everything(window, players, serverBullets, clientBullets, role, celSize);
    }

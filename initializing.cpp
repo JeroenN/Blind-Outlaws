@@ -45,7 +45,8 @@ std::pair <std::string,int> user_select_player_type(std::string connectionType)
     if(connectionType=="client" || connectionType=="c")
     {
         std::cout<<"Enter (1) to join team 1, Enter (2) to be the player: \n";
-        std::cin >> team;
+        std::cin >> team;     //REMOVE COMMENT
+        //team=1;
         while(team!=1 && team!=2)
         {
             std::cout<<"This is an invalid command. \nEnter (1) to join team 1, Enter (2) to be the player: \n";
@@ -53,7 +54,8 @@ std::pair <std::string,int> user_select_player_type(std::string connectionType)
         }
     }
     std::cout<<"Enter (spectate) to be the spectator, Enter (player) to be the player: \n";
-    std::cin >> playerRole;
+    std::cin >> playerRole; //REMOVE COMMENT
+    //playerRole="p";
     while(playerRole!="s" && playerRole!="spectate" && playerRole != "p" && playerRole != "player")
     {
         std::cout<<"This is an invalid command. \nEnter (spectate) to be the spectator, Enter (player) to be the player: \n";
