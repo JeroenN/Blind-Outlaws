@@ -140,13 +140,13 @@ void choose_playerType(std::pair<std::string,int> &playerType, const unsigned sh
     TcpSocket.setBlocking(false);
 
     client_send_ip_port(cIP, clientPort, serverIP);
-    bool conformationPlayerType=false;
-    while(conformationPlayerType==false)
-    {
+    //bool conformationPlayerType=false;
+    //while(conformationPlayerType==false)
+    //{
         playerType = user_select_player_type(connectionType);
         receive_playerTypes_taken(TcpSocket, listener);
         client_send_playerType(playerType, serverIP);
-    }
+    //}
 
 }
 //Program runs the client or the server code based on the previous user choice

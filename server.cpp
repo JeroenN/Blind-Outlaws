@@ -4,6 +4,45 @@
 #include <algorithm>
 #include <numeric>
 
+void playerWalking(std::vector<player> &players, bool &update, int &time, const int celSize)
+{
+    float posX=players[0].getPosX();
+    float posY=players[0].getPosY();
+
+    if(update==true&& time>10)
+    {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
+                || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+            {
+                    time=0;
+                    posX+=celSize;
+                    players[0].setPlayerPosition(posX, posY);
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
+                || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+            {
+                   time=0;
+                    posX-=celSize;
+                   players[0].setPlayerPosition(posX, posY);
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
+                || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            {
+                time=0;
+                posY-=celSize;
+                players[0].setPlayerPosition(posX, posY);
+
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
+                || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+            {
+                time=0;
+                posY+=celSize;
+                players[0].setPlayerPosition(posX, posY);
+            }
+        }
+}
+
 void set_shooting_dir(int &shooting_dir)
 {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
@@ -67,97 +106,6 @@ bool fire_able(int time)
         return false;
     }
 }
-void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
-{
-    std::string messageType=" ";
-    int speedX=0;
-    int speedY=0;
-    if(bulletPacket>>messageType)
-    {
-        if(messageType=="bulletCreated")
-        {
-            bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY(), speedX, speedY));
-        }
-    }
-}
-
-void set_player_position(std::vector<player> &players, sf::Packet posPacket)
-{
-    sf::Vector2f changingPosition;
-    std::string messageType;
-
-    if(posPacket>>changingPosition.x>>changingPosition.y>> messageType) //>> objectNumber -> needs to be added
-    {
-        if(messageType=="player")
-        {
-            players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
-        }
-    }
-}
-
-void set_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText)
-{
-    sf::Vector2f changingPosition;
-    std::ostringstream messageType;
-    std::string messageReceived;
-    for(unsigned int i=0; i<bullets.size(); ++i)
-    {
-        if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
-        {
-            messageType<<bulletText<<i;
-            if(messageType.str()==messageReceived)
-            {
-                bullets[i].setBulletPosition(changingPosition.x+10, changingPosition.y+10);
-            }
-        }
-    }
-}
-
-
-/*
-
-packet << static_cast<sf::Uint32>(list.size());
-for (std::list<xxx>::const_iterator it = list.begin(); it != list.end(); ++it)
-    packet << *it;
-
-const auto pi = 3.14;
-
-std::vector<int> v;
-packet << v.size();
-//for (const auto e: v) packet << e;
-const int size = v.size();
-for (int i=0; i!=size; ++i)
-{
-  const int e = v[i];
-  packet << e;
-}
- */
-
-void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
-                          std::vector<bullet> &bullets)
-{    
-    std::ostringstream bulletMessage;
-    std::string bulletText="bullet";
-
-    //std::vector<sf::Vector2f> bulletPositions;
-
-    sf::UdpSocket socket;
-    sf::Packet posPacket;
-    if(bullets.size()>0)
-    {
-        //packet << static_cast<sf::Uint32>(bullets.size());
-        for (unsigned i=0; i<bullets.size(); i++)
-        {
-            bulletMessage<<bulletText<<i;
-            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
-        }
-        if (socket.send(posPacket, ip, port) != sf::Socket::Done)
-        {
-            //std::cout<<"whoops... some data wasn't sent";
-        }
-    }
-}
-
 
 void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role, const int celSize)
 {
@@ -203,6 +151,53 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     window.display();
 }
 
+///RECEIVE FUNCTIONS
+void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
+{
+    std::string messageType=" ";
+    int speedX=0;
+    int speedY=0;
+    if(bulletPacket>>messageType)
+    {
+        if(messageType=="bulletCreated")
+        {
+            bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY(), speedX, speedY));
+        }
+    }
+}
+
+void receive_player_position(std::vector<player> &players, sf::Packet posPacket)
+{
+    sf::Vector2f changingPosition;
+    std::string messageType;
+
+    if(posPacket>>changingPosition.x>>changingPosition.y>> messageType) //>> objectNumber -> needs to be added
+    {
+        if(messageType=="player")
+        {
+            players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
+        }
+    }
+}
+
+void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText)
+{
+    sf::Vector2f changingPosition;
+    std::ostringstream messageType;
+    std::string messageReceived;
+    for(unsigned int i=0; i<bullets.size(); ++i)
+    {
+        if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
+        {
+            messageType<<bulletText<<i;
+            if(messageType.str()==messageReceived)
+            {
+                bullets[i].setBulletPosition(changingPosition.x+10, changingPosition.y+10);
+            }
+        }
+    }
+}
+
 void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
 {
 
@@ -220,9 +215,9 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
             //std::cout<<"whoops... some data wasn't received";
         }
 
-        set_player_position(players, posPacket);
+        receive_player_position(players, posPacket);
 
-        set_bullet_position(bullets, posPacket, bulletText);
+        receive_bullet_position(bullets, posPacket, bulletText);
         receive_bullet_created(posPacket, bullets, players);
     }
 
@@ -243,6 +238,161 @@ bool player_check_walking(const std::vector<player> &players, sf::Vector2f prevP
 
 
 /// shoot_bullets
+
+void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts,
+                            std::vector<std::pair<std::string, int>> &vectorPlayerType, std::map<int, sf::IpAddress> &playerPortIP, bool &tcpMessageReceived)
+{
+    std::string messageType;
+    std::pair<std::string, int> playerType;
+    sf::Packet cIPandPortPacket;
+    std::string cIP;
+    sf::IpAddress clientIpReceived;
+
+    listener.accept(TcpSocket);
+
+    if(TcpSocket.receive(cIPandPortPacket)==sf::Socket::Done)
+    {
+        if(cIPandPortPacket>>messageType)
+        {
+            if(messageType=="Port")
+            {
+                tcpMessageReceived=true;
+                if(cIPandPortPacket>>playerType.first>>playerType.second)
+                {
+                    std::cout<<"role: "<<playerType.first<<std::flush << "\n";
+                    std::cout<<"team: "<<playerType.second<<std::flush << "\n \n";
+                    vectorPlayerType.push_back(std::make_pair(playerType.first, playerType.second));
+                }
+            }
+
+            if(messageType=="IpPort")
+            {
+                tcpMessageReceived=true;
+                if(cIPandPortPacket>>cIP>>clientPort)
+                {
+                    std::cout<<cIP<<"\n";
+                    clientIpReceived=cIP;
+                    std::cout<<clientPort<<"\n";
+                    vectorClientPorts.push_back(clientPort);
+                    //playerPortIP.insert(clientPort, clientIpReceived);
+                }
+            }
+
+        }
+    }
+}
+
+
+
+std::vector<player> makePlayers(int& amount_players) noexcept
+{
+    std::vector<player> newPlayer;
+    for(int i=0; i!= amount_players; ++i)
+    {
+        newPlayer.push_back(player(30,30,0,0));
+    }
+    return newPlayer;
+}
+
+///SEND FUNCTIONS
+void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<std::pair<std::string, int>> vectorPlayerType, const std::vector<unsigned short> vectorClientPorts,
+                                const bool tcpMessageReceived)
+{
+    for(unsigned int i=0; i<vectorPlayerType.size(); ++i)
+    {
+            int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
+            int spectator=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
+            int player=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
+            int roleTeam1 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
+            sf::TcpSocket TcpSocket;
+            sf::Packet playerTypePacket;
+
+            if(vectorPlayerType[i].second == 1)
+            {
+                std::string messageType="type_team_1";
+                m_playersTeam1+=1;
+                if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
+                {
+                  spectator=1;
+                }
+                if(vectorPlayerType[i].first =="s" || vectorPlayerType[i].first =="spectator")
+                {
+                  player=2;
+                }
+                //assert(m_playersTeam1>!2);
+
+                roleTeam1=spectator+player;
+                if(tcpMessageReceived==true)
+                {
+                    for(unsigned int j=0; j<vectorClientPorts.size(); ++j)
+                    {
+                            TcpSocket.connect(clientIP, vectorClientPorts[j]);
+                            std::cout<<"ports: " << vectorClientPorts[j] << "\n \n";
+                            playerTypePacket<<messageType<<m_playersTeam1<<roleTeam1;
+                            TcpSocket.send(playerTypePacket);
+                    }
+                }
+            }
+      }
+}
+
+void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players)
+{
+
+    std::string playerMessage ="player";
+    sf::UdpSocket socket;
+    sf::Packet posPacket;
+    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
+
+    for(unsigned i=0; i<ports.size(); ++i)
+    {
+        if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
+        {
+            //std::cout<<"whoops... some data wasn't sent";
+        }
+    }
+}
+
+void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
+{
+
+    std::string playerMessage ="player";
+    sf::UdpSocket socket;
+    sf::Packet posPacket;
+    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
+
+    if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+    {
+        //std::cout<<"whoops... some data wasn't sent";
+    }
+}
+
+void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
+                          std::vector<bullet> &bullets)
+{
+    std::ostringstream bulletMessage;
+    std::string bulletText="bullet";
+
+    //std::vector<sf::Vector2f> bulletPositions;
+
+    sf::UdpSocket socket;
+    sf::Packet posPacket;
+    if(bullets.size()>0)
+    {
+        //packet << static_cast<sf::Uint32>(bullets.size());
+        for (unsigned i=0; i<bullets.size(); i++)
+        {
+            bulletMessage<<bulletText<<i;
+            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
+        }
+        if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+        {
+            //std::cout<<"whoops... some data wasn't sent";
+        }
+    }
+}
+
+//This is also a send function, should 2 or 3 smaller functions, future me is going to deal with that... in the future
 void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short &port, std::vector<player> &players,
                   bool &update, int &time, const int shooting_dir)
 {
@@ -289,196 +439,6 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
             bullets[i].moveBullet();
         }
      }
-}
-
-void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts,
-                            std::vector<std::pair<std::string, int>> &vectorPlayerType, std::map<int, sf::IpAddress> &playerPortIP, bool &tcpMessageReceived)
-{
-    std::string messageType;
-    std::pair<std::string, int> playerType;
-    sf::Packet cIPandPortPacket;
-    std::string cIP;
-    sf::IpAddress clientIpReceived;
-
-    listener.accept(TcpSocket);
-
-    if(TcpSocket.receive(cIPandPortPacket)==sf::Socket::Done)
-    {
-        if(cIPandPortPacket>>messageType)
-        {
-            if(messageType=="Port")
-            {
-                tcpMessageReceived=true;
-                if(cIPandPortPacket>>playerType.first>>playerType.second)
-                {
-                    std::cout<<"role: "<<playerType.first<<std::flush << "\n";
-                    std::cout<<"team: "<<playerType.second<<std::flush << "\n \n";
-                    vectorPlayerType.push_back(std::make_pair(playerType.first, playerType.second));
-                }
-            }
-
-            if(messageType=="IpPort")
-            {
-                tcpMessageReceived=true;
-                if(cIPandPortPacket>>cIP>>clientPort)
-                {
-                    std::cout<<cIP<<"\n";
-                    clientIpReceived=cIP;
-                    std::cout<<clientPort<<"\n";
-                    vectorClientPorts.push_back(clientPort);
-                    //playerPortIP.insert(clientPort, clientIpReceived);
-                }
-            }
-
-        }
-    }
-}
-/*
-void server_receive_playerType(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
-{
-    std::string messageType;
-    std::pair<std::string, int> playerType;
-    sf::Packet playerTypePacket;
-
-    listener.accept(TcpSocket);
-
-    if(TcpSocket.receive(playerTypePacket)==sf::Socket::Done)
-    {
-        if(playerTypePacket>>messageType);
-        {
-            if(messageType=="playerType")
-            {
-            if(playerTypePacket>>playerType.first>>playerType.second)
-            {
-
-                std::cout<<"BOOP";
-            }
-                //std::cout<<"role: "<<playerType.first<<"\n";
-                //std::cout<<"team: "<<playerType.second<<"\n";
-            }
-        }
-    }
-}
-*/
-void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<std::pair<std::string, int>> vectorPlayerType, const std::vector<unsigned short> vectorClientPorts,
-                                const bool tcpMessageReceived)
-{
-    for(unsigned int i=0; i<vectorPlayerType.size(); ++i)
-    {
-            int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
-            int spectator=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
-            int player=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
-            int roleTeam1 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
-            sf::TcpSocket TcpSocket;
-            sf::Packet playerTypePacket;
-
-            if(vectorPlayerType[i].second == 1)
-            {
-                std::string messageType="type_team_1";
-                m_playersTeam1+=1;
-                if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
-                {
-                  spectator=1;
-                }
-                if(vectorPlayerType[i].first =="s" || vectorPlayerType[i].first =="spectator")
-                {
-                  player=2;
-                }
-                //assert(m_playersTeam1>!2);
-
-                roleTeam1=spectator+player;
-                if(tcpMessageReceived==true)
-                {
-                    for(unsigned int j=0; j<vectorClientPorts.size(); ++j)
-                    {
-                            TcpSocket.connect(clientIP, vectorClientPorts[j]);
-                            std::cout<<"ports: " << vectorClientPorts[j] << "\n \n";
-                            playerTypePacket<<messageType<<m_playersTeam1<<roleTeam1;
-                            TcpSocket.send(playerTypePacket);
-                    }
-                }
-            }
-      }
-}
-
-
-std::vector<player> makePlayers(int& amount_players) noexcept
-{
-    std::vector<player> newPlayer;
-    for(int i=0; i!= amount_players; ++i)
-    {
-        newPlayer.push_back(player(30,30,0,0));
-    }
-    return newPlayer;
-}
-
-void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players)
-{
-
-    std::string playerMessage ="player";
-    sf::UdpSocket socket;
-    sf::Packet posPacket;
-    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
-
-    for(unsigned i=0; i<ports.size(); ++i)
-    {
-        if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
-        {
-            //std::cout<<"whoops... some data wasn't sent";
-        }
-    }
-}
-
-void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
-{
-
-    std::string playerMessage ="player";
-    sf::UdpSocket socket;
-    sf::Packet posPacket;
-    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
-
-    if (socket.send(posPacket, ip, port) != sf::Socket::Done)
-    {
-        //std::cout<<"whoops... some data wasn't sent";
-    }
-}
-void playerWalking(std::vector<player> &players, bool &update, int &time, const int celSize)
-{
-    float posX=players[0].getPosX();
-    float posY=players[0].getPosY();
-
-    if(update==true&& time>10)
-    {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-            {
-                    time=0;
-                    posX+=celSize;
-                    players[0].setPlayerPosition(posX, posY);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-            {
-                   time=0;
-                    posX-=celSize;
-                   players[0].setPlayerPosition(posX, posY);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-            {
-                time=0;
-                posY-=celSize;
-                players[0].setPlayerPosition(posX, posY);
-
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-            {
-                time=0;
-                posY+=celSize;
-                players[0].setPlayerPosition(posX, posY);
-            }
-        }
 }
 
 void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, sf::RenderWindow &window)

@@ -14,8 +14,8 @@
 
 bool fire_able(int time);
 void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players);
-void set_player_position(std::vector<player> &players, sf::Packet posPacket);
-void set_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket);
+void receive_player_position(std::vector<player> &players, sf::Packet posPacket);
+void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket);
 void send_position_bullet(const sf::IpAddress ip, const unsigned short port, std::vector<bullet> &bullets);
 void receive_tcp_messages(sf::TcpSocket &socket, sf::TcpListener &listener);
 void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets,
