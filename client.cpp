@@ -13,7 +13,7 @@
 #include <stdio.h>      /* printf, scanf, puts, NULL */
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
-void client_send_playerType(const std::pair<std::string, int> playerType, const sf::IpAddress serverIP, const unsigned short clientPort)
+void client_send_playerType(const std::pair<std::string, int> playerType, const sf::IpAddress serverIP)
 {
     std::string messageType="Port";
     sf::TcpSocket TcpSocket;
@@ -38,11 +38,11 @@ void receive_tcp_messages(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
         {
             if(messageType=="type_team_1")
             {
-               if(tcpPacket>>team>>role)
-               {
-                   std::cout<<"amount of players team 1: "<<team << "\n"<<std::flush ;
-                   switch(role)
-                   {
+                if(tcpPacket>>team>>role)
+                {
+                    std::cout<<"amount of players team 1: "<<team << "\n"<<std::flush ;
+                    switch(role)
+                    {
                         case 1:
                         std::cout<<"role selected: spectator" << "\n \n"<<std::flush;
                         break;
@@ -52,12 +52,24 @@ void receive_tcp_messages(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
                         case 3:
                         std::cout<< "role slected: both spectator and player" << "\n \n"<<std::flush;
                         break;
-                   }
-
-               }
+                        default:
+                        std::cout<< "an error occurred" << "\n \n"<<std::flush;
+                        break;
+                    }
+                }
             }
         }
     }
+}
+void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP)
+{
+    std::string messageType="IpPort";
+    sf::TcpSocket TcpSocket;
+    sf::Packet cIPandPortPacket;
+
+    TcpSocket.connect(serverIP,2000);
+    cIPandPortPacket<<messageType<<cIP<<clientPort;
+    TcpSocket.send(cIPandPortPacket);
 }
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, unsigned short &clientPort, bool &update,sf::RenderWindow &window)
@@ -92,7 +104,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
 
 
     client_send_ip_port(cIP, clientPort, serverIP);
-    client_send_playerType(playerType, serverIP, clientPort);
+    client_send_playerType(playerType, serverIP);
 
     while(window.isOpen())
     {

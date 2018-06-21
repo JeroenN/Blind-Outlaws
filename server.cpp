@@ -401,16 +401,6 @@ void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<
       }
 }
 
-void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP)
-{
-    std::string messageType="IpPort";
-    sf::TcpSocket TcpSocket;
-    sf::Packet cIPandPortPacket;
-
-    TcpSocket.connect(serverIP,2000);
-    cIPandPortPacket<<messageType<<cIP<<clientPort;
-    TcpSocket.send(cIPandPortPacket);
-}
 
 std::vector<player> makePlayers(int& amount_players) noexcept
 {
