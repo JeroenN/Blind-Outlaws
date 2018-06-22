@@ -121,17 +121,17 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
        serverBullets[i].display(window);
     }
 
-    if(role == "s" || role =="spectator")
-    {
+    //if(role == "s" || role =="spectator")
+    //{
         for(int i=0; i<static_cast<int>(players.size()); ++i)
         {
             players[i].display(window);
         }
-    }
+    /*}
     if(role == "p" || role =="player")
     {
             players[0].display(window);
-    }
+    }*/
     //Grid
     for(int i=0; i<17; ++i)
     {
@@ -236,9 +236,6 @@ bool player_check_walking(const std::vector<player> &players, sf::Vector2f prevP
     }
 }
 
-
-/// shoot_bullets
-
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts,
                             std::vector<std::pair<std::string, int>> &vectorPlayerType, std::map<int, sf::IpAddress> &playerPortIP, bool &tcpMessageReceived)
 {
@@ -252,11 +249,11 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
 
     if(TcpSocket.receive(cIPandPortPacket)==sf::Socket::Done)
     {
+        tcpMessageReceived=true;
         if(cIPandPortPacket>>messageType)
         {
             if(messageType=="Port")
             {
-                tcpMessageReceived=true;
                 if(cIPandPortPacket>>playerType.first>>playerType.second)
                 {
                     std::cout<<"role: "<<playerType.first<<std::flush << "\n";
@@ -266,15 +263,14 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
             }
 
             if(messageType=="IpPort")
-            {
-                tcpMessageReceived=true;
+            {             
                 if(cIPandPortPacket>>cIP>>clientPort)
                 {
                     std::cout<<cIP<<"\n";
                     clientIpReceived=cIP;
                     std::cout<<clientPort<<"\n";
                     vectorClientPorts.push_back(clientPort);
-                    //playerPortIP.insert(clientPort, clientIpReceived);
+                    playerPortIP.insert(std::make_pair(clientPort, clientIpReceived));
                 }
             }
 
@@ -298,18 +294,19 @@ std::vector<player> makePlayers(int& amount_players) noexcept
 void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<std::pair<std::string, int>> vectorPlayerType, const std::vector<unsigned short> vectorClientPorts,
                                 const bool tcpMessageReceived)
 {
+    int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
+    int spectator=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
+    int player=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
+    int roleTeam1 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
+    sf::TcpSocket TcpSocket;
+    sf::Packet playerTypePacket;
+    std::string messageType="type_team_1";
+
     for(unsigned int i=0; i<vectorPlayerType.size(); ++i)
     {
-            int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
-            int spectator=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
-            int player=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
-            int roleTeam1 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
-            sf::TcpSocket TcpSocket;
-            sf::Packet playerTypePacket;
-
             if(vectorPlayerType[i].second == 1)
             {
-                std::string messageType="type_team_1";
+
                 m_playersTeam1+=1;
                 if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
                 {
@@ -320,20 +317,27 @@ void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<
                   player=2;
                 }
                 //assert(m_playersTeam1>!2);
-
                 roleTeam1=spectator+player;
-                if(tcpMessageReceived==true)
-                {
-                    for(unsigned int j=0; j<vectorClientPorts.size(); ++j)
-                    {
-                            TcpSocket.connect(clientIP, vectorClientPorts[j]);
-                            std::cout<<"ports: " << vectorClientPorts[j] << "\n \n";
-                            playerTypePacket<<messageType<<m_playersTeam1<<roleTeam1;
-                            TcpSocket.send(playerTypePacket);
-                    }
-                }
+
+
             }
       }
+    if(tcpMessageReceived)
+    {
+        std::cout<<"sending to: \n";
+        for(unsigned int j=0; j<vectorClientPorts.size(); ++j)
+        {
+            std::cout<<clientIP<<"\n";
+            TcpSocket.connect(clientIP, vectorClientPorts[j]);
+            std::cout<<"port: " << vectorClientPorts[j] << "\n";
+            std::cout<<"amount of players: "<< m_playersTeam1 << "\n";
+            std::cout<<"role: "<<roleTeam1<<"\n";
+            playerTypePacket<<messageType<<m_playersTeam1<<roleTeam1;
+            TcpSocket.send(playerTypePacket);
+        }
+        std::cout<<"__________________________________ \n";
+    }
+
 }
 
 void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players)
@@ -446,6 +450,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     bool update=true;
     std::map<int, sf::IpAddress> playerPortIp;
     std::vector<std::pair<std::string, int>> vectorPlayerType;
+    vectorPlayerType.push_back(playerType);
     const std::string role =playerType.first;
     const int celSize =30;
     int timeWalking=10;
@@ -461,7 +466,6 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     std::vector<unsigned short> vectorClientPorts;
 
     sf::IpAddress clientIP=sf::IpAddress::getLocalAddress();
-    std::string cIP=clientIP.sf::IpAddress::toString();
 
     socket.setBlocking(false);
 

@@ -40,19 +40,19 @@ std::pair <std::string,int> user_select_player_type(std::string connectionType)
 {
     std::pair <std::string,int> playerType;
     std::string playerRole="NULL";
-    int team=0;
+    int team=1;
     if(connectionType=="server" || connectionType=="s")
     {
         std::cout<<"You are placed in team one \n";
     }
     if(connectionType=="client" || connectionType=="c")
     {
-        std::cout<<"Enter (1) to join team 1, Enter (2) to be the player: \n";
+        std::cout<<"Enter (1) to join team 1, Enter (2) to join team 2: \n";
         //std::cin >> team;     //REMOVE COMMENT
         team=1;
         while(team!=1 && team!=2)
         {
-            std::cout<<"This is an invalid command. \nEnter (1) to join team 1, Enter (2) to be the player: \n";
+            std::cout<<"This is an invalid command. \nEnter (1) to join team 1, Enter (2) to joing team 2: \n";
             std::cin >> team;
         }
     }
@@ -99,6 +99,7 @@ void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listen
 
     if(TcpSocket.receive(tcpPacket)==sf::Socket::Done)
     {
+        std::cout<<"\n TEST TEST TEST TEST \n";
         if(tcpPacket>>messageType)
         {
             if(messageType=="type_team_1")
@@ -136,8 +137,9 @@ void choose_playerType(std::pair<std::string,int> &playerType, const unsigned sh
     sf::TcpListener listener;
     sf::TcpSocket TcpSocket;
     listener.listen(clientPort);
-    listener.setBlocking(false);
-    TcpSocket.setBlocking(false);
+    //listener.setBlocking(false);
+    //TcpSocket.setBlocking(false);
+
 
     client_send_ip_port(cIP, clientPort, serverIP);
     //bool conformationPlayerType=false;
@@ -150,7 +152,7 @@ void choose_playerType(std::pair<std::string,int> &playerType, const unsigned sh
 
 }
 //Program runs the client or the server code based on the previous user choice
-void run_server_or_client(std::string const connectionType, sf::RenderWindow &window)
+void run_server_or_client(std::string const connectionType)
 {
     std::pair<std::string,int> playerType;
     int currentAmountOfPlayers=2;
@@ -165,6 +167,8 @@ void run_server_or_client(std::string const connectionType, sf::RenderWindow &wi
     if(connectionType==serverCheckShort || connectionType==serverCheck)
     {
       std::string serverName = "server";
+       playerType = user_select_player_type(connectionType);
+       sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
       create_window(serverName, window);
       do_server(players, playerType, window);
     }
@@ -172,6 +176,7 @@ void run_server_or_client(std::string const connectionType, sf::RenderWindow &wi
     {
        std::string clientName = "client";
        choose_playerType(playerType, clientPort, connectionType);
+       sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
        create_window(clientName, window);
        do_client(players, playerType, clientPort,window);
     }

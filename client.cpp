@@ -24,6 +24,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     sf::Event Event;
     const sf::IpAddress serverIP="127.0.0.1"; //local server ip, there should be an option to input the server ip.
 
+
     sf::UdpSocket socket;
     socket.bind(clientPort);
     socket.setBlocking(false);
@@ -33,8 +34,8 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
 
     while(window.isOpen())
     {
-        //receive_tcp_messages(TcpSocket, listener);
         window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
+
         timeWalking+=1;
         timeShooting+=1;
         const sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
@@ -60,10 +61,3 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     }
 }
 
-/*
-
-
-  std::vector<int> v = {1,2,3,4,5,6};
-  std::swap(v[3], v.back());
-  v.pop_back();
-*/

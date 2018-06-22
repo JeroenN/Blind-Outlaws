@@ -13,6 +13,5 @@
 int main()
 {
     std::string connectionType=user_select_server_or_client();
-    sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
-    run_server_or_client(connectionType, window);
+    run_server_or_client(connectionType);
 }
