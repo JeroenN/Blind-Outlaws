@@ -10,7 +10,7 @@
 #include "bullet.h"
 #include "client.h"
 
-void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listener);
+void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, int team1Taken, int role1Taken, int team2Taken, int role2Taken);
 void create_window(const std::string windowName,sf::RenderWindow &window);
 
 void do_client(std::vector<player> &players, unsigned short &clientPort, bool &update,sf::RenderWindow &window);

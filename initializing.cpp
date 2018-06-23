@@ -48,8 +48,8 @@ std::pair <std::string,int> user_select_player_type(std::string connectionType)
     if(connectionType=="client" || connectionType=="c")
     {
         std::cout<<"Enter (1) to join team 1, Enter (2) to join team 2: \n";
-        //std::cin >> team;     //REMOVE COMMENT
-        team=1;
+        std::cin >> team;     //REMOVE COMMENT
+        //team=1;
         while(team!=1 && team!=2)
         {
             std::cout<<"This is an invalid command. \nEnter (1) to join team 1, Enter (2) to joing team 2: \n";
@@ -57,8 +57,8 @@ std::pair <std::string,int> user_select_player_type(std::string connectionType)
         }
     }
     std::cout<<"Enter (spectate) to be the spectator, Enter (player) to be the player: \n";
-    //std::cin >> playerRole; //REMOVE COMMENT
-    playerRole="p";
+    std::cin >> playerRole; //REMOVE COMMENT
+    //playerRole="p";
     while(playerRole!="s" && playerRole!="spectate" && playerRole != "p" && playerRole != "player")
     {
         std::cout<<"This is an invalid command. \nEnter (spectate) to be the spectator, Enter (player) to be the player: \n";
@@ -88,40 +88,62 @@ void client_send_playerType(const std::pair<std::string, int> playerType, const 
     playerTypePacket<<messageType<<playerType.first<<playerType.second;
     TcpSocket.send(playerTypePacket);
 }
-void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listener)
+void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, int team1Taken, int role1Taken, int team2Taken, int role2Taken)
 {
     std::string messageType;
     sf::Packet tcpPacket;
-
     listener.accept(TcpSocket);
-    int team;
-    int role;
 
     if(TcpSocket.receive(tcpPacket)==sf::Socket::Done)
     {
-        std::cout<<"\n TEST TEST TEST TEST \n";
         if(tcpPacket>>messageType)
         {
             if(messageType=="type_team_1")
             {
-                if(tcpPacket>>team>>role)
+                std::cout<<"Connected! \n";
+                if(tcpPacket>>team1Taken>>role1Taken)
                 {
-                    std::cout<<"amount of players team 1: "<<team << "\n"<<std::flush ;
-                    switch(role)
+                    if(team1Taken==2)
+                    {
+                        std::cout<<"TEAM 1 is full, you are automatically placed in TEAM 2";
+                    }
+                    switch(role1Taken)
                     {
                         case 1:
-                        std::cout<<"role selected: spectator" << "\n \n"<<std::flush;
+                        std::cout<<"You can join TEAM 1 and select PLAYER" << "\n \n"<<std::flush;
                         break;
                         case 2:
-                        std::cout<< "role slected: player" << "\n \n"<<std::flush;
+                        std::cout<<"You can join TEAM 1 and select SPECTATOR" << "\n \n"<<std::flush;
                         break;
                         case 3:
-                        std::cout<< "role slected: both spectator and player" << "\n \n"<<std::flush;
+                        std::cout<< "\n \n"<<std::flush;
                         break;
                         default:
-                        std::cout<< "an error occurred" << "\n \n"<<std::flush;
+                        std::cout<< "You can join TEAM 1 and select PLAYER OR SPECTATOR" << "\n \n"<<std::flush;
                         break;
                     }
+                }
+            }
+            if(tcpPacket>>team2Taken>>role2Taken)
+            {
+                if(team2Taken==2)
+                {
+                    std::cout<<"TEAM 2 is full, you are automatically placed in TEAM 1";
+                }
+                switch(role2Taken)
+                {
+                    case 1:
+                    std::cout<<"You can join TEAM 2 and select PLAYER" << "\n \n"<<std::flush;
+                    break;
+                    case 2:
+                    std::cout<<"You can join TEAM 2 and select SPECTATOR" << "\n \n"<<std::flush;
+                    break;
+                    case 3:
+                    std::cout<< "\n \n"<<std::flush;
+                    break;
+                    default:
+                    std::cout<< "You can join TEAM 2 and select PLAYER OR SPECTATOR" << "\n \n"<<std::flush;
+                    break;
                 }
             }
         }
@@ -139,16 +161,16 @@ void choose_playerType(std::pair<std::string,int> &playerType, const unsigned sh
     listener.listen(clientPort);
     //listener.setBlocking(false);
     //TcpSocket.setBlocking(false);
-
+    int team1Taken;
+    int role1Taken;
+    int team2Taken;
+    int role2Taken;
 
     client_send_ip_port(cIP, clientPort, serverIP);
-    //bool conformationPlayerType=false;
-    //while(conformationPlayerType==false)
-    //{
-        playerType = user_select_player_type(connectionType);
-        receive_playerTypes_taken(TcpSocket, listener);
-        client_send_playerType(playerType, serverIP);
-    //}
+    std::cout<<"\nWaiting for response from server... \n";
+    receive_playerTypes_taken(TcpSocket, listener, team1Taken, role1Taken, team2Taken, role2Taken);
+    playerType = user_select_player_type(connectionType);
+    client_send_playerType(playerType, serverIP);
 
 }
 //Program runs the client or the server code based on the previous user choice

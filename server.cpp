@@ -290,17 +290,10 @@ std::vector<player> makePlayers(int& amount_players) noexcept
     return newPlayer;
 }
 
-///SEND FUNCTIONS
-void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<std::pair<std::string, int>> vectorPlayerType, const std::vector<unsigned short> vectorClientPorts,
-                                const bool tcpMessageReceived)
+void playerTypes_currently_selected(int &m_playersTeam1,int &roleTeam1, int &m_playersTeam2, int &roleTeam2, const std::vector<std::pair<std::string, int>> vectorPlayerType)
 {
-    int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
     int spectator=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
     int player=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
-    int roleTeam1 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
-    sf::TcpSocket TcpSocket;
-    sf::Packet playerTypePacket;
-    std::string messageType="type_team_1";
 
     for(unsigned int i=0; i<vectorPlayerType.size(); ++i)
     {
@@ -316,27 +309,50 @@ void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<
                 {
                   player=2;
                 }
-                //assert(m_playersTeam1>!2);
+                assert(m_playersTeam1>!2);
                 roleTeam1=spectator+player;
+            }
+            spectator=0;
+            player=0;
+            if(vectorPlayerType[i].second == 2)
+            {
 
-
+                m_playersTeam2+=1;
+                if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
+                {
+                  spectator=1;
+                }
+                if(vectorPlayerType[i].first =="s" || vectorPlayerType[i].first =="spectator")
+                {
+                  player=2;
+                }
+                assert(m_playersTeam1>!2);
+                roleTeam2=spectator+player;
             }
       }
+}
+
+///SEND FUNCTIONS
+void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<unsigned short> vectorClientPorts,
+                                const bool tcpMessageReceived, int &m_playersTeam1,int &roleTeam1, int &m_playersTeam2, int &roleTeam2)
+{
+    sf::TcpSocket TcpSocket;
+    sf::Packet playerTypePacket;
+    std::string messageType="type_team_1";
+
     if(tcpMessageReceived)
     {
-        std::cout<<"sending to: \n";
+        std::cout<<"\nsending to: \n";
         for(unsigned int j=0; j<vectorClientPorts.size(); ++j)
         {
-            std::cout<<clientIP<<"\n";
             TcpSocket.connect(clientIP, vectorClientPorts[j]);
-            std::cout<<"port: " << vectorClientPorts[j] << "\n";
-            std::cout<<"amount of players: "<< m_playersTeam1 << "\n";
-            std::cout<<"role: "<<roleTeam1<<"\n";
-            playerTypePacket<<messageType<<m_playersTeam1<<roleTeam1;
+            std::cout<<"port: " << vectorClientPorts[j] << " the playerTypes that have currently been taken \n";
+            playerTypePacket<<messageType<<m_playersTeam1<<roleTeam1<<m_playersTeam2<<roleTeam2;
             TcpSocket.send(playerTypePacket);
         }
-        std::cout<<"__________________________________ \n";
     }
+
+
 
 }
 
@@ -448,6 +464,10 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
 void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, sf::RenderWindow &window)
 {
     bool update=true;
+    int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
+    int roleTeam1 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
+    int m_playersTeam2 =0; //players in team2 is 0 or 1 or 2
+    int roleTeam2 =0; //role is 0 (no role selected), 1(player selected), 2(spectator selected), 3(both selected)
     std::map<int, sf::IpAddress> playerPortIp;
     std::vector<std::pair<std::string, int>> vectorPlayerType;
     vectorPlayerType.push_back(playerType);
@@ -484,7 +504,8 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     ++timeShooting;
     bool tcpMessageReceived=false;
     server_receive_ip_port(TcpSocket, listener, clientPort, vectorClientPorts, vectorPlayerType, playerPortIp, tcpMessageReceived);
-    send_which_team_role_taken(clientIP,vectorPlayerType,vectorClientPorts, tcpMessageReceived);
+    playerTypes_currently_selected(m_playersTeam1,roleTeam1, m_playersTeam2, roleTeam2, vectorPlayerType);
+    send_which_team_role_taken(clientIP,vectorClientPorts, tcpMessageReceived, m_playersTeam1,roleTeam1, m_playersTeam2, roleTeam2);
 
     if(role =="p" || role =="player")
     {
