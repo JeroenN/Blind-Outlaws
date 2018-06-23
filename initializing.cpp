@@ -110,10 +110,10 @@ void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listen
                     switch(role1Taken)
                     {
                         case 1:
-                        std::cout<<"You can join TEAM 1 and select PLAYER" << "\n \n"<<std::flush;
+                        std::cout<<"You can join TEAM 1 and select SPECTATOR" << "\n \n"<<std::flush;
                         break;
                         case 2:
-                        std::cout<<"You can join TEAM 1 and select SPECTATOR" << "\n \n"<<std::flush;
+                        std::cout<<"You can join TEAM 1 and select PLAYER" << "\n \n"<<std::flush;
                         break;
                         case 3:
                         std::cout<< "\n \n"<<std::flush;
@@ -133,10 +133,10 @@ void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listen
                 switch(role2Taken)
                 {
                     case 1:
-                    std::cout<<"You can join TEAM 2 and select PLAYER" << "\n \n"<<std::flush;
+                    std::cout<<"You can join TEAM 2 and select SPECTATOR" << "\n \n"<<std::flush;
                     break;
                     case 2:
-                    std::cout<<"You can join TEAM 2 and select SPECTATOR" << "\n \n"<<std::flush;
+                    std::cout<<"You can join TEAM 2 and select PLAYER" << "\n \n"<<std::flush;
                     break;
                     case 3:
                     std::cout<< "\n \n"<<std::flush;
