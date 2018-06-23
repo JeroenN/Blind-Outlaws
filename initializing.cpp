@@ -88,7 +88,49 @@ void client_send_playerType(const std::pair<std::string, int> playerType, const 
     playerTypePacket<<messageType<<playerType.first<<playerType.second;
     TcpSocket.send(playerTypePacket);
 }
-void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, int team1Taken, int role1Taken, int team2Taken, int role2Taken)
+void show_playerTypes_open(const int team1Taken, const int role1Taken, const int team2Taken, const int role2Taken)
+{
+    if(team1Taken==2)
+    {
+        std::cout<<"TEAM 1 is full, you are automatically placed in TEAM 2";
+    }
+    switch(role1Taken)
+    {
+        case 1:
+        std::cout<<"You can join TEAM 1 and select SPECTATOR" << "\n \n"<<std::flush;
+        break;
+        case 2:
+        std::cout<<"You can join TEAM 1 and select PLAYER" << "\n \n"<<std::flush;
+        break;
+        case 3:
+        std::cout<< "\n \n"<<std::flush;
+        break;
+        default:
+        std::cout<< "You can join TEAM 1 and select PLAYER OR SPECTATOR" << "\n \n"<<std::flush;
+        break;
+    }
+
+    if(team2Taken==2)
+    {
+        std::cout<<"TEAM 2 is full, you are automatically placed in TEAM 1";
+    }
+    switch(role2Taken)
+    {
+        case 1:
+        std::cout<<"You can join TEAM 2 and select SPECTATOR" << "\n \n"<<std::flush;
+        break;
+        case 2:
+        std::cout<<"You can join TEAM 2 and select PLAYER" << "\n \n"<<std::flush;
+        break;
+        case 3:
+        std::cout<< "\n \n"<<std::flush;
+        break;
+        default:
+        std::cout<< "You can join TEAM 2 and select PLAYER OR SPECTATOR" << "\n \n"<<std::flush;
+        break;
+    }
+}
+void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, int &team1Taken, int &role1Taken, int &team2Taken, int &role2Taken)
 {
     std::string messageType;
     sf::Packet tcpPacket;
@@ -103,48 +145,12 @@ void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listen
                 std::cout<<"Connected! \n";
                 if(tcpPacket>>team1Taken>>role1Taken)
                 {
-                    if(team1Taken==2)
-                    {
-                        std::cout<<"TEAM 1 is full, you are automatically placed in TEAM 2";
-                    }
-                    switch(role1Taken)
-                    {
-                        case 1:
-                        std::cout<<"You can join TEAM 1 and select SPECTATOR" << "\n \n"<<std::flush;
-                        break;
-                        case 2:
-                        std::cout<<"You can join TEAM 1 and select PLAYER" << "\n \n"<<std::flush;
-                        break;
-                        case 3:
-                        std::cout<< "\n \n"<<std::flush;
-                        break;
-                        default:
-                        std::cout<< "You can join TEAM 1 and select PLAYER OR SPECTATOR" << "\n \n"<<std::flush;
-                        break;
-                    }
+
                 }
             }
             if(tcpPacket>>team2Taken>>role2Taken)
             {
-                if(team2Taken==2)
-                {
-                    std::cout<<"TEAM 2 is full, you are automatically placed in TEAM 1";
-                }
-                switch(role2Taken)
-                {
-                    case 1:
-                    std::cout<<"You can join TEAM 2 and select SPECTATOR" << "\n \n"<<std::flush;
-                    break;
-                    case 2:
-                    std::cout<<"You can join TEAM 2 and select PLAYER" << "\n \n"<<std::flush;
-                    break;
-                    case 3:
-                    std::cout<< "\n \n"<<std::flush;
-                    break;
-                    default:
-                    std::cout<< "You can join TEAM 2 and select PLAYER OR SPECTATOR" << "\n \n"<<std::flush;
-                    break;
-                }
+
             }
         }
     }
@@ -165,7 +171,7 @@ void choose_playerType(std::pair<std::string,int> &playerType, const unsigned sh
     int role1Taken;
     int team2Taken;
     int role2Taken;
-
+    show_playerTypes_open(team1Taken, role1Taken, team2Taken, role2Taken);
     client_send_ip_port(cIP, clientPort, serverIP);
     std::cout<<"\nWaiting for response from server... \n";
     receive_playerTypes_taken(TcpSocket, listener, team1Taken, role1Taken, team2Taken, role2Taken);
@@ -185,7 +191,7 @@ void run_server_or_client(std::string const connectionType)
     /* initialize random seed: */
     srand (time(NULL));
     unsigned short clientPort = rand() % 99999 + 1000;
-
+    assert(clientPort>1000);
     if(connectionType==serverCheckShort || connectionType==serverCheck)
     {
       std::string serverName = "server";

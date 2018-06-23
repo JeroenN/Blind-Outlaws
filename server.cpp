@@ -351,9 +351,6 @@ void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<
             TcpSocket.send(playerTypePacket);
         }
     }
-
-
-
 }
 
 void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players)
