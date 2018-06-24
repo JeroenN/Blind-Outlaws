@@ -196,11 +196,11 @@ void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listen
                 if(tcpPacket>>team1Taken>>role1Taken)
                 {
                     std::cout<<"role taken in team 1: "<< role1Taken << "\n";
-                }
-            }
-            if(tcpPacket>>team2Taken>>role2Taken)
-            {
+                }            
+                if(tcpPacket>>team2Taken>>role2Taken)
+                {
 
+                }
             }
         }
     }
