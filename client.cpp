@@ -36,27 +36,27 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     {
         window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
 
-        timeWalking+=1;
-        timeShooting+=1;
-        const sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
-        playerWalking(players, update, timeWalking, celSize);
-
-        sf::IpAddress recipient = serverIP;
-        unsigned short serverPort = 2000;
-        set_shooting_dir(shooting_dir);
-        shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
-
-
-        if(player_check_walking(players, prevPosition)==true)
+        if(role =="p"|| role == "player")
         {
-            send_client_player_position(recipient, serverPort, players);
+            timeWalking+=1;
+            timeShooting+=1;
+            const sf::Vector2f prevPosition = sf::Vector2f(players[0].getPosX(), players[0].getPosY());
+            playerWalking(players, update, timeWalking, celSize);
+
+            sf::IpAddress recipient = serverIP;
+            unsigned short serverPort = 2000;
+            set_shooting_dir(shooting_dir);
+            shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
+
+            if(player_check_walking(players, prevPosition)==true)
+            {
+                send_client_player_position(recipient, serverPort, players);
+            }
+            send_position_bullet(recipient, serverPort, clientBullets);
+
+            bulletHit(serverBullets, players, celSize);
         }
-        send_position_bullet(recipient, serverPort, clientBullets);
-
         receive_position_packets(socket, players, serverBullets);
-
-        bulletHit(serverBullets, players, celSize);
-
         draw_everything(window, players, serverBullets, clientBullets, role, celSize);
     }
 }

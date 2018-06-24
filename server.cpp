@@ -216,7 +216,6 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
         }
 
         receive_player_position(players, posPacket);
-
         receive_bullet_position(bullets, posPacket, bulletText);
         receive_bullet_created(posPacket, bullets, players);
     }
