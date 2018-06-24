@@ -292,9 +292,10 @@ std::vector<player> makePlayers(int& amount_players) noexcept
 
 void playerTypes_currently_selected(int &m_playersTeam1,int &roleTeam1, int &m_playersTeam2, int &roleTeam2, const std::vector<std::pair<std::string, int>> vectorPlayerType)
 {
-    int spectator=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
-    int player=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
-
+    int spectator1=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
+    int player1=0; //player is 0 (no player) or player is 2(player selected), the reason for player being 2 is that when we add this with spectator we get 3, see roleTeam
+    int spectator2=0; //spectator is 0 (no spectator) or spectator is 1 (spectator selected)
+    int player2=0;
     for(unsigned int i=0; i<vectorPlayerType.size(); ++i)
     {
             if(vectorPlayerType[i].second == 1)
@@ -303,33 +304,34 @@ void playerTypes_currently_selected(int &m_playersTeam1,int &roleTeam1, int &m_p
                 m_playersTeam1+=1;
                 if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
                 {
-                  player=1;
+                  player1=1;
                 }
                 if(vectorPlayerType[i].first =="s" || vectorPlayerType[i].first =="spectator")
                 {
-                  spectator=2;
+                  spectator1=2;
                 }
                 assert(m_playersTeam1>!2);
-                roleTeam1=spectator+player;
+
             }
-            spectator=0;
-            player=0;
+
             if(vectorPlayerType[i].second == 2)
             {
 
                 m_playersTeam2+=1;
                 if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
                 {
-                  player=1;
+                  player2=1;
                 }
                 if(vectorPlayerType[i].first =="s" || vectorPlayerType[i].first =="spectator")
                 {
-                  spectator=2;
+                  spectator2=2;
                 }
                 assert(m_playersTeam1>!2);
-                roleTeam2=spectator+player;
+
             }
       }
+     roleTeam1=spectator1+player1;
+     roleTeam2=spectator2+player2;
 }
 
 ///SEND FUNCTIONS
