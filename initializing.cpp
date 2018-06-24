@@ -12,6 +12,7 @@
 #include "player.h"
 #include "server.h"
 #include "bullet.h"
+#include <cassert>
 
 void create_window(const std::string windowName,sf::RenderWindow &window)
 {
@@ -36,36 +37,85 @@ std::string user_select_server_or_client()
     return connectionType;
 }
 
-std::pair <std::string,int> user_select_player_type(std::string connectionType)
+std::pair <std::string,int> user_select_player_type(std::string connectionType, const int team1Taken, const int role1Taken, const int team2Taken, const int role2Taken)
 {
     std::pair <std::string,int> playerType;
     std::string playerRole="NULL";
     int team=1;
-    if(connectionType=="server" || connectionType=="s")
+
+
+    if(team1Taken==2 && team2Taken==2)
     {
-        std::cout<<"You are placed in team one \n";
+        std::cout<<"The game is full, the program will now automaticaly be closed. \n";
+        //window.close();
     }
-    if(connectionType=="client" || connectionType=="c")
+    else if(team1Taken==2)
+    {
+        std::cout<<"You have been automatically placed in TEAM 2 \n";
+        team=2;
+    }
+    else if(team2Taken==2)
+    {
+        std::cout<<"You have been automatically placed in TEAM 1 \n";
+        team=1;
+    }
+    else
     {
         std::cout<<"Enter (1) to join team 1, Enter (2) to join team 2: \n";
         std::cin >> team;     //REMOVE COMMENT
-        //team=1;
-        while(team!=1 && team!=2)
+    }
+    //team=1;
+    while(team!=1 && team!=2)
+    {
+        std::cout<<"This is an invalid command. \nEnter (1) to join team 1, Enter (2) to joing team 2: \n";
+        std::cin >> team;
+    }
+    if(team==1)
+    {
+        if(role1Taken==1)
         {
-            std::cout<<"This is an invalid command. \nEnter (1) to join team 1, Enter (2) to joing team 2: \n";
-            std::cin >> team;
+            std::cout<<"You have been automatically made the SPECTATOR \n";
+            playerRole="s";
+        }
+        else if(role1Taken==2)
+        {
+            std::cout<<"You have been automatically made the PLAYER \n";
+            playerRole="p";
+        }
+        else
+        {
+            std::cout<<"Enter (s) to be the spectator, Enter (p) to be the player: \n";
+            std::cin >> playerRole; //REMOVE COMMENT
+            //playerRole="p";
         }
     }
-    std::cout<<"Enter (spectate) to be the spectator, Enter (player) to be the player: \n";
-    std::cin >> playerRole; //REMOVE COMMENT
-    //playerRole="p";
+    if(team==2)
+    {
+        if(role2Taken==1)
+        {
+            std::cout<<"You have been automatically made the SPECTATOR \n";
+            playerRole="s";
+        }
+        else if(role2Taken==2)
+        {
+            std::cout<<"You have been automatically made the PLAYER \n";
+            playerRole="p";
+        }
+        else
+        {
+            std::cout<<"Enter (s) to be the spectator, Enter (p) to be the player: \n";
+            std::cin >> playerRole; //REMOVE COMMENT
+            //playerRole="p";
+        }
+    }
+
     while(playerRole!="s" && playerRole!="spectate" && playerRole != "p" && playerRole != "player")
     {
         std::cout<<"This is an invalid command. \nEnter (spectate) to be the spectator, Enter (player) to be the player: \n";
         std::cin >> playerRole;
     }
     playerType = std::make_pair(playerRole, team);
-
+    assert(team==1 || team==2);
     return playerType;
 }
 void client_send_ip_port(std::string cIP, unsigned short clientPort, sf::IpAddress serverIP)
@@ -165,18 +215,24 @@ void choose_playerType(std::pair<std::string,int> &playerType, const unsigned sh
     sf::TcpListener listener;
     sf::TcpSocket TcpSocket;
     listener.listen(clientPort);
-    //listener.setBlocking(false);
-    //TcpSocket.setBlocking(false);
+
     int team1Taken;
     int role1Taken;
     int team2Taken;
     int role2Taken;
-    show_playerTypes_open(team1Taken, role1Taken, team2Taken, role2Taken);
-    client_send_ip_port(cIP, clientPort, serverIP);
-    std::cout<<"\nWaiting for response from server... \n";
-    receive_playerTypes_taken(TcpSocket, listener, team1Taken, role1Taken, team2Taken, role2Taken);
-    playerType = user_select_player_type(connectionType);
-    client_send_playerType(playerType, serverIP);
+
+    if(connectionType=="c" || connectionType=="client")
+    {
+        client_send_ip_port(cIP, clientPort, serverIP);
+        std::cout<<"\nWaiting for response from server... \n";
+        receive_playerTypes_taken(TcpSocket, listener, team1Taken, role1Taken, team2Taken, role2Taken);
+        show_playerTypes_open(team1Taken, role1Taken, team2Taken, role2Taken);
+    }
+    playerType = user_select_player_type(connectionType, team1Taken, role1Taken, team2Taken, role2Taken);
+    if(connectionType=="c" || connectionType=="client")
+    {
+        client_send_playerType(playerType, serverIP);
+    }
 
 }
 //Program runs the client or the server code based on the previous user choice
@@ -195,8 +251,8 @@ void run_server_or_client(std::string const connectionType)
     if(connectionType==serverCheckShort || connectionType==serverCheck)
     {
       std::string serverName = "server";
-       playerType = user_select_player_type(connectionType);
-       sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
+      choose_playerType(playerType, clientPort, connectionType);
+      sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
       create_window(serverName, window);
       do_server(players, playerType, window);
     }
