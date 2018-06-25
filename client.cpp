@@ -10,6 +10,87 @@
 #include "server.h"
 #include "bullet.h"
 #include "initializing.h"
+void receive_bullet_created_client(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
+{
+    std::string messageType=" ";
+    int speedX=0;
+    int speedY=0;
+    if(bulletPacket>>messageType)
+    {
+        if(messageType=="bulletCreated")
+        {
+            bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY(), speedX, speedY));
+        }
+    }
+}
+
+void receive_player_position_client(std::vector<player> &players, sf::Packet posPacket)
+{
+    sf::Vector2f changingPosition;
+    std::string messageType;
+
+    if(posPacket>>changingPosition.x>>changingPosition.y>> messageType) //>> objectNumber -> needs to be added
+    {
+        if(messageType=="player")
+        {
+            players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
+        }
+    }
+}
+
+void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText)
+{
+    sf::Vector2f changingPosition;
+    std::ostringstream messageType;
+    std::string messageReceived;
+    for(unsigned int i=0; i<bullets.size(); ++i)
+    {
+        if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
+        {
+            messageType<<bulletText<<i;
+            if(messageType.str()==messageReceived)
+            {
+                bullets[i].setBulletPosition(changingPosition.x+10, changingPosition.y+10);
+            }
+        }
+    }
+}
+
+void receive_position_packets_client(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
+{
+
+    std::string bulletText ="bullet";
+    sf::IpAddress sender;
+    unsigned short port;
+    sf::Packet posPacket;
+
+    for(int i=0; i<3; ++i)
+    {
+        if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
+        {
+            //playerPortIp={port, sender};
+            //std::cout<<playerPortIp.second;
+            //std::cout<<"whoops... some data wasn't received";
+        }
+
+        receive_player_position_client(players, posPacket);
+        receive_bullet_position_client(bullets, posPacket, bulletText);
+        receive_bullet_created_client(posPacket, bullets, players);
+    }
+}
+
+void send_player_position_client(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
+{
+    std::string playerMessage ="player";
+    sf::UdpSocket socket;
+    sf::Packet posPacket;
+    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
+
+    if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+    {
+        //std::cout<<"whoops... some data wasn't sent";
+    }
+}
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort, sf::RenderWindow &window)
 {
@@ -29,9 +110,6 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     socket.bind(clientPort);
     socket.setBlocking(false);
 
-    //client_send_ip_port(cIP, clientPort, serverIP);
-    //client_send_playerType(playerType, serverIP);
-
     while(window.isOpen())
     {
         window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
@@ -50,13 +128,14 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
 
             if(player_check_walking(players, prevPosition)==true)
             {
-                send_client_player_position(recipient, serverPort, players);
+                send_player_position_client(recipient, serverPort, players);
             }
             send_position_bullet(recipient, serverPort, clientBullets);
 
             bulletHit(serverBullets, players, celSize);
         }
-        receive_position_packets(socket, players, serverBullets);
+
+        receive_position_packets_client(socket, players, serverBullets);
         draw_everything(window, players, serverBullets, clientBullets, role, celSize);
     }
 }

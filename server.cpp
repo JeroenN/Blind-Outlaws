@@ -166,7 +166,7 @@ void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets
     }
 }
 
-void receive_player_position(std::vector<player> &players, sf::Packet posPacket)
+void receive_player_position(std::vector<player> &players, sf::Packet posPacket, bool &playerWalkingReceived)
 {
     sf::Vector2f changingPosition;
     std::string messageType;
@@ -175,6 +175,7 @@ void receive_player_position(std::vector<player> &players, sf::Packet posPacket)
     {
         if(messageType=="player")
         {
+            playerWalkingReceived=true;
             players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
         }
     }
@@ -198,7 +199,7 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
     }
 }
 
-void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
+void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, bool &playerWalkingReceived)
 {
 
     std::string bulletText ="bullet";
@@ -215,11 +216,10 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
             //std::cout<<"whoops... some data wasn't received";
         }
 
-        receive_player_position(players, posPacket);
+        receive_player_position(players, posPacket, playerWalkingReceived);
         receive_bullet_position(bullets, posPacket, bulletText);
         receive_bullet_created(posPacket, bullets, players);
     }
-
 }
 
 /// player::has_walked() const noexcept { return getPos() != getPrevPos(); }
@@ -371,20 +371,6 @@ void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, c
     }
 }
 
-void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
-{
-
-    std::string playerMessage ="player";
-    sf::UdpSocket socket;
-    sf::Packet posPacket;
-    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
-
-    if (socket.send(posPacket, ip, port) != sf::Socket::Done)
-    {
-        //std::cout<<"whoops... some data wasn't sent";
-    }
-}
-
 void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
                           std::vector<bullet> &bullets)
 {
@@ -524,8 +510,8 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
 
         bulletHit(clientBullets, players, celSize);
      }
-
-    receive_position_packets(socket, players, clientBullets);
+    bool playerWalkingReceived =false;
+    receive_position_packets(socket, players, clientBullets, playerWalkingReceived);
 
     draw_everything(window, players, serverBullets, clientBullets, role, celSize);
    }
