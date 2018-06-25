@@ -9,6 +9,6 @@
 #include "server.h"
 #include "bullet.h"
 
-void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort,sf::RenderWindow &window);
+void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort, const int celSize, sf::RenderWindow &window);
 
 #endif // CLIENT_H

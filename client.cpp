@@ -54,7 +54,7 @@ void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet pos
             messageType<<bulletText<<i;
             if(messageType.str()==messageReceived)
             {
-                bullets[i].setBulletPosition(changingPosition.x+10, changingPosition.y+10);
+                bullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
             }
         }
     }
@@ -96,14 +96,13 @@ void send_player_position_client(sf::IpAddress ip, unsigned short port, const st
     }
 }
 
-void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort, sf::RenderWindow &window)
+void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort, const int celSize, sf::RenderWindow &window)
 {
     bool update=true;
     const std::string role =playerType.first;
     int shooting_dir=0;
     int timeWalking=0;
     int timeShooting=0;
-    int celSize=30;
     std::vector<bullet> clientBullets{};
     std::vector<bullet> serverBullets{};
     sf::Event Event;

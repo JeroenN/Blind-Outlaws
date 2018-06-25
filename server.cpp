@@ -133,17 +133,17 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
             players[0].display(window);
     }*/
     //Grid
-    for(int i=0; i<17; ++i)
+    for(int i=0; i<25; ++i)
     {
         sf::Vertex line[] =
         {
             sf::Vertex(sf::Vector2f(celSize*i, 0)),
-            sf::Vertex(sf::Vector2f(celSize*i, 500))
+            sf::Vertex(sf::Vector2f(celSize*i, window.getSize().y))
         };
         sf::Vertex line2[] =
         {
             sf::Vertex(sf::Vector2f(0, celSize*i)),
-            sf::Vertex(sf::Vector2f(500, celSize*i))
+            sf::Vertex(sf::Vector2f(window.getSize().x, celSize*i))
         };
         window.draw(line, 2, sf::Lines);
         window.draw(line2, 2, sf::Lines);
@@ -193,7 +193,7 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
             messageType<<bulletText<<i;
             if(messageType.str()==messageReceived)
             {
-                bullets[i].setBulletPosition(changingPosition.x+10, changingPosition.y+10);
+                bullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
             }
         }
     }
@@ -279,12 +279,12 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
 
 
 
-std::vector<player> makePlayers(int& amount_players) noexcept
+std::vector<player> makePlayers(int& amount_players, const int celSize) noexcept
 {
     std::vector<player> newPlayer;
     for(int i=0; i!= amount_players; ++i)
     {
-        newPlayer.push_back(player(30,30,0,0));
+        newPlayer.push_back(player(celSize,celSize,0,0));
     }
     return newPlayer;
 }
@@ -463,7 +463,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      }
 }
 
-void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, sf::RenderWindow &window)
+void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, const int celSize, sf::RenderWindow &window)
 {
     bool update=true;
     int m_playersTeam1 =0; //players in team1 is 0 or 1 or 2
@@ -474,7 +474,6 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     std::vector<std::pair<std::string, int>> vectorPlayerType;
     vectorPlayerType.push_back(playerType);
     const std::string role =playerType.first;
-    const int celSize =30;
     int timeWalking=10;
     int timeShooting=30;
 

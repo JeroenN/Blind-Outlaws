@@ -28,12 +28,12 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
                   bool &update, int &time, const int shooting_dir);
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts,
                              std::vector<std::pair<std::string, int>> &vectorPlayerType, std::map<int, sf::IpAddress> &playerPortIP, bool &tcpMessageReceived);
-std::vector<player> makePlayers(int& amount_players) noexcept;
+std::vector<player> makePlayers(int& amount_players, const int celSize) noexcept;
 void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> players);
 void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<unsigned short> vectorClientPorts,
                                 const bool tcpMessageReceived, int &m_playersTeam1,int &roleTeam1, int &m_playersTeam2, int &roleTeam2);
 void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players);
 void playerWalking(std::vector<player> &players, bool &update, int &time, const int celSize);
-void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, sf::RenderWindow &window);
+void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, const int celSize, sf::RenderWindow &window);
 
 #endif // SERVER_H

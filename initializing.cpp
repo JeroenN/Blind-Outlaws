@@ -14,9 +14,9 @@
 #include "bullet.h"
 #include <cassert>
 
-void create_window(const std::string windowName,sf::RenderWindow &window)
+void create_window(const std::string windowName,sf::RenderWindow &window, const int windowWidth, const int windowHeight)
 {
-    const sf::Vector2u windowSize{500,500};
+    const sf::Vector2u windowSize{windowWidth,windowHeight};
     window.setSize(windowSize);
     window.setTitle(windowName);
 
@@ -238,31 +238,37 @@ void choose_playerType(std::pair<std::string,int> &playerType, const unsigned sh
 //Program runs the client or the server code based on the previous user choice
 void run_server_or_client(std::string const connectionType)
 {
+    const int windowHeight = 576;
+    const int windowWidth = 1024;
     std::pair<std::string,int> playerType;
     int currentAmountOfPlayers=2;
-    std::vector<player> players{makePlayers(currentAmountOfPlayers)};
+    const int n_horizontalCels=25;
     std::string serverCheck ="server";
     std::string serverCheckShort ="s";
 
     /* initialize random seed: */
     srand (time(NULL));
-    unsigned short clientPort = rand() % 99999 + 1000;
-    assert(clientPort>1000);
+    unsigned short clientPort = rand() % 99999 + 2000;
+    assert(clientPort>2000);
     if(connectionType==serverCheckShort || connectionType==serverCheck)
     {
       std::string serverName = "server";
       choose_playerType(playerType, clientPort, connectionType);
-      sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
-      create_window(serverName, window);
-      do_server(players, playerType, window);
+      sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Blind Outlaws");
+      create_window(serverName, window, windowWidth, windowHeight);
+      const int celSize =window.getSize().x/n_horizontalCels;
+      std::vector<player> players{makePlayers(currentAmountOfPlayers, celSize)};
+      do_server(players, playerType, celSize, window);
     }
     else
     {
        std::string clientName = "client";
        choose_playerType(playerType, clientPort, connectionType);
-       sf::RenderWindow window(sf::VideoMode(500, 500), "SFML window");
-       create_window(clientName, window);
-       do_client(players, playerType, clientPort,window);
+       sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Blind Outlaws");
+       create_window(clientName, window, windowWidth, windowHeight);
+       const int celSize =window.getSize().x/n_horizontalCels;
+       std::vector<player> players{makePlayers(currentAmountOfPlayers, celSize)};
+       do_client(players, playerType, clientPort, celSize, window);
     }
 }
 
