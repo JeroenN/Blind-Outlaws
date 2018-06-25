@@ -23,5 +23,6 @@ HEADERS += \
     player.h \
     bullet.h \
     initializing.h \
-    client.h
+    client.h \
+    wall.h
 
