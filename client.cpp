@@ -35,6 +35,10 @@ void receive_player_position_client(std::vector<player> &players, sf::Packet pos
         {
             players[1].setPlayerPosition(changingPosition.x, changingPosition.y);
         }
+        if(messageType=="otherPlayer")
+        {
+            players[0].setPlayerPosition(changingPosition.x, changingPosition.y);
+        }
     }
 }
 
@@ -64,7 +68,7 @@ void receive_position_packets_client(sf::UdpSocket &socket, std::vector<player> 
     unsigned short port;
     sf::Packet posPacket;
 
-    for(int i=0; i<3; ++i)
+    for(int i=0; i<4; ++i)
     {
         if (socket.receive(posPacket,sender,port) != sf::Socket::Done)
         {
