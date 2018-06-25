@@ -29,7 +29,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
 void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, unsigned short &clientPort, std::vector<unsigned short> &vectorClientPorts,
                              std::vector<std::pair<std::string, int>> &vectorPlayerType, std::map<int, sf::IpAddress> &playerPortIP, bool &tcpMessageReceived);
 std::vector<player> makePlayers(int& amount_players) noexcept;
-void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players);
+void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> players);
 void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<unsigned short> vectorClientPorts,
                                 const bool tcpMessageReceived, int &m_playersTeam1,int &roleTeam1, int &m_playersTeam2, int &roleTeam2);
 void send_client_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players);

@@ -125,7 +125,6 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             unsigned short serverPort = 2000;
             set_shooting_dir(shooting_dir);
             shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
-
             if(player_check_walking(players, prevPosition)==true)
             {
                 send_player_position_client(recipient, serverPort, players);

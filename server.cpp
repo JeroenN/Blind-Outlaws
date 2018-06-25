@@ -354,7 +354,7 @@ void send_which_team_role_taken(const sf::IpAddress clientIP, const std::vector<
     }
 }
 
-void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> &players)
+void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, const std::vector<player> players)
 {
 
     std::string playerMessage ="player";
@@ -393,6 +393,16 @@ void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
         {
             //std::cout<<"whoops... some data wasn't sent";
         }
+    }
+}
+void send_other_players_position_to_all_clients(const bool playerWalkingReceived, const std::vector<player> players)
+{
+    if(playerWalkingReceived==true)
+    {
+        std::string playerMessage ="otherPlayer";
+        sf::UdpSocket socket;
+        sf::Packet posPacket;
+        posPacket<<players[1].getPosX()<<players[1].getPosY()<<playerMessage;
     }
 }
 
@@ -512,6 +522,8 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
      }
     bool playerWalkingReceived =false;
     receive_position_packets(socket, players, clientBullets, playerWalkingReceived);
+
+    send_other_players_position_to_all_clients(playerWalkingReceived, players);
 
     draw_everything(window, players, serverBullets, clientBullets, role, celSize);
    }
