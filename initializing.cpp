@@ -14,6 +14,44 @@
 #include "bullet.h"
 #include <cassert>
 
+//First index will be the column
+//Second index will be the row
+/*using xy_grid = std::vector<std::vector<int>>;
+
+xy_grid create_grid(const int n_columns, const int n_rows)
+{
+   xy_grid grid;
+   ///LEGEND
+   //0 = nothing
+   //1 = wall
+
+   std::vector<int> tiles {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                           0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                           0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
+                           0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
+                           0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0};
+   std::vector<int> column;
+   int n=1;
+   for(int i=0; i<n_columns*n_rows; ++i)
+   {
+      column.push_back(tiles[i]);
+      if(i==n_columns*n)
+      {
+         ++n;
+         grid.push_back(column);
+      }
+   }
+   return grid;
+}*/
+
 void create_window(const std::string windowName,sf::RenderWindow &window, const int windowWidth, const int windowHeight)
 {
     const sf::Vector2u windowSize{windowWidth,windowHeight};

@@ -12,9 +12,9 @@ class wall
     sf::RectangleShape block;
 
 public:
-    wall(const float height, const float width, const float celX, const float celY);
+    wall(const float height, const float width, const float celX, const float celY, const float celSize);
 
-    void setPlayerPosition(float celX, float celY, const int celSize)
+    void setWallPosition(float celX, float celY, const int celSize)
     {
         int posX = celX*celSize;
         int posY = celY*celSize;
@@ -33,7 +33,7 @@ public:
         return block.getPosition().x/celSize ;
     }
 
-    float getPosY(const int celSize)const noexcept{
+    float getCelY(const int celSize)const noexcept{
         return block.getPosition().y/celSize;
     }
 

@@ -3,6 +3,7 @@
 #include "player.h"
 #include "bullet.h"
 #include "initializing.h"
+#include "wall.h"
 #include "client.h"
 #include "iostream"
 #include <SFML/Graphics.hpp>

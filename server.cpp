@@ -151,6 +151,7 @@ void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std
     window.display();
 }
 
+
 ///RECEIVE FUNCTIONS
 void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
 {

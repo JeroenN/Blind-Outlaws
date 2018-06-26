@@ -6,6 +6,7 @@
 #include <SFML/Network.hpp>
 #include <string>
 #include "player.h"
+#include "wall.h"
 #include "server.h"
 #include "bullet.h"
 

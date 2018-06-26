@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     player.cpp \
     bullet.cpp \
     initializing.cpp \
-    client.cpp
+    client.cpp \
+    wall.cpp
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 LIBS += -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio

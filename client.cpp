@@ -10,6 +10,7 @@
 #include "server.h"
 #include "bullet.h"
 #include "initializing.h"
+#include "wall.h"
 void receive_bullet_created_client(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
 {
     std::string messageType=" ";
