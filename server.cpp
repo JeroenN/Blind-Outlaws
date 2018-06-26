@@ -441,7 +441,7 @@ void send_clients_bullet_position_to_all_clients(const sf::IpAddress ip, std::ve
 }
 
 //This is also a send function, should 2 or 3 smaller functions, future me is going to deal with that... in the future
-void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short &port, std::vector<player> &players,
+void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, const std::vector<unsigned short> ports, std::vector<player> &players,
                   bool &update, int &time, const int shooting_dir)
 {
     int bulletSpeedX=3;
@@ -472,12 +472,13 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
          posPacket<<bulletMessage;
-
-         if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+         for(int i=0; i<ports.size(); ++i)
          {
-             //std::cout<<"whoops... some data wasn't sent";
+             if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
+             {
+                 //std::cout<<"whoops... some data wasn't sent";
+             }
          }
-
          time=0;
      }
      if(bullets.size()>0)
@@ -547,7 +548,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
         }
         set_shooting_dir(shooting_dir);
 
-        shoot_bullet(serverBullets, recipient, clientPort,players, update, timeShooting, shooting_dir);
+        shoot_bullet(serverBullets, recipient, vectorClientPorts,players, update, timeShooting, shooting_dir);
 
         send_position_bullet(recipient, clientPort, serverBullets);
 
