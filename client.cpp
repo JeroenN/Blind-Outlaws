@@ -11,6 +11,55 @@
 #include "bullet.h"
 #include "initializing.h"
 #include "wall.h"
+//This is also a send function, should 2 or 3 smaller functions, future me is going to deal with that... in the future
+void shoot_bullet_client(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short port, std::vector<player> &players,
+                  bool &update, int &time, const int shooting_dir)
+{
+    int bulletSpeedX=3;
+    int bulletSpeedY=0;
+    switch(shooting_dir)
+    {
+        case 0:
+        bulletSpeedX=3;
+        bulletSpeedY=0;
+        break;
+        case 1:
+        bulletSpeedX=-3;
+        bulletSpeedY=0;
+        break;
+        case 2:
+        bulletSpeedX=0;
+        bulletSpeedY=-3;
+        break;
+        case 3:
+        bulletSpeedX=0;
+        bulletSpeedY=3;
+        break;
+    }
+     sf::Packet posPacket;
+     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true)
+     {
+         bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
+         std::string bulletMessage ="bulletCreated";
+         sf::UdpSocket socket;
+         posPacket<<bulletMessage;
+
+         if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+         {
+             //std::cout<<"whoops... some data wasn't sent";
+         }
+
+         time=0;
+     }
+     if(bullets.size()>0)
+     {
+        for(unsigned int i=0; i<bullets.size(); ++i)
+        {
+            bullets[i].moveBullet();
+        }
+     }
+}
+
 void receive_bullet_created_client(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
 {
     std::string messageType=" ";
@@ -128,7 +177,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             sf::IpAddress recipient = serverIP;
             unsigned short serverPort = 2000;
             set_shooting_dir(shooting_dir);
-            shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
+            shoot_bullet_client(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
             if(player_check_walking(players, prevPosition)==true)
             {
                 send_player_position_client(recipient, serverPort, players);
