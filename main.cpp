@@ -53,9 +53,6 @@ yx_grid create_grid()
 
 int main()
 {
-    auto g=create_grid;
-    std::cout<<"column size: " <<g[0].size() << "\n";
-    std::cout<<"row size: "<< g.size() << "\n";
     std::string connectionType=user_select_server_or_client();
     run_server_or_client(connectionType);
 }

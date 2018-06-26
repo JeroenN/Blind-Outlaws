@@ -396,7 +396,7 @@ void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
         }
     }
 }
-void send_other_players_position_to_all_clients(const bool playerWalkingReceived, const std::vector<player> players, sf::IpAddress ip, std::vector<unsigned short> ports)
+void send_clients_players_position_to_all_clients(const bool playerWalkingReceived, const std::vector<player> players, sf::IpAddress ip, std::vector<unsigned short> ports)
 {
     if(playerWalkingReceived==true)
     {
@@ -410,6 +410,31 @@ void send_other_players_position_to_all_clients(const bool playerWalkingReceived
             if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
             {
                 //std::cout<<"whoops... some data wasn't sent";
+            }
+        }
+    }
+}
+void send_clients_bullet_position_to_all_clients(const sf::IpAddress ip, std::vector<unsigned short> ports,
+                          std::vector<bullet> &bullets)
+{
+    std::ostringstream bulletMessage;
+    std::string bulletText="bullet";
+
+    sf::UdpSocket socket;
+    sf::Packet posPacket;
+    if(bullets.size()>0)
+    {
+        //packet << static_cast<sf::Uint32>(bullets.size());
+        for (unsigned i=0; i<bullets.size(); i++)
+        {
+            bulletMessage<<bulletText<<i;
+            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
+        }
+        for(unsigned i=0; i<ports.size(); ++i)
+        {
+            if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
+            {
+            //std::cout<<"whoops... some data wasn't sent";
             }
         }
     }
@@ -531,7 +556,8 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     bool playerWalkingReceived =false;
     receive_position_packets(socket, players, clientBullets, playerWalkingReceived);
 
-    send_other_players_position_to_all_clients(playerWalkingReceived, players, clientIP, vectorClientPorts);
+    send_clients_players_position_to_all_clients(playerWalkingReceived, players, clientIP, vectorClientPorts);
+    send_clients_bullet_position_to_all_clients(clientIP, vectorClientPorts, clientBullets);
 
     draw_everything(window, players, serverBullets, clientBullets, role, celSize);
    }
