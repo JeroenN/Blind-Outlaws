@@ -372,27 +372,27 @@ void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, c
     }
 }
 
-void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
+void send_position_bullet(const sf::IpAddress ip, const std::vector<unsigned short> ports,
                           std::vector<bullet> &bullets)
 {
     std::ostringstream bulletMessage;
     std::string bulletText="bullet";
 
-    //std::vector<sf::Vector2f> bulletPositions;
-
     sf::UdpSocket socket;
     sf::Packet posPacket;
     if(bullets.size()>0)
     {
-        //packet << static_cast<sf::Uint32>(bullets.size());
         for (unsigned i=0; i<bullets.size(); i++)
         {
             bulletMessage<<bulletText<<i;
             posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
         }
-        if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+        for(unsigned int i=0; i<ports.size(); ++i)
         {
-            //std::cout<<"whoops... some data wasn't sent";
+            if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
+            {
+                //std::cout<<"whoops... some data wasn't sent";
+            }
         }
     }
 }
@@ -550,7 +550,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
 
         shoot_bullet(serverBullets, recipient, vectorClientPorts,players, update, timeShooting, shooting_dir);
 
-        send_position_bullet(recipient, clientPort, serverBullets);
+        send_position_bullet(recipient, vectorClientPorts, serverBullets);
 
         bulletHit(clientBullets, players, celSize);
      }

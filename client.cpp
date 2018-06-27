@@ -157,6 +157,28 @@ void send_player_position_client(sf::IpAddress ip, unsigned short port, const st
         //std::cout<<"whoops... some data wasn't sent";
     }
 }
+void send_position_bullet_client(const sf::IpAddress ip, const unsigned short port,
+                          std::vector<bullet> &bullets)
+{
+    std::ostringstream bulletMessage;
+    std::string bulletText="bullet";
+
+    sf::UdpSocket socket;
+    sf::Packet posPacket;
+    if(bullets.size()>0)
+    {
+        for (unsigned i=0; i<bullets.size(); i++)
+        {
+            bulletMessage<<bulletText<<i;
+            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
+        }
+
+        if (socket.send(posPacket, ip, port) != sf::Socket::Done)
+        {
+            //std::cout<<"whoops... some data wasn't sent";
+        }
+    }
+}
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort, const int celSize, sf::RenderWindow &window)
 {
@@ -194,7 +216,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             {
                 send_player_position_client(recipient, serverPort, players);
             }
-            send_position_bullet(recipient, serverPort, clientBullets);
+            send_position_bullet_client(recipient, serverPort, clientBullets);
 
             bulletHit(serverBullets, players, celSize);
         }
