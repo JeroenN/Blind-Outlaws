@@ -418,7 +418,7 @@ void send_clients_bullet_position_to_all_clients(const sf::IpAddress ip, std::ve
                           std::vector<bullet> &bullets)
 {
     std::ostringstream bulletMessage;
-    std::string bulletText="bullet";
+    std::string bulletText="bulletClient";
 
     sf::UdpSocket socket;
     sf::Packet posPacket;
@@ -472,7 +472,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, const std::vec
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
          posPacket<<bulletMessage;
-         for(int i=0; i<ports.size(); ++i)
+         for(unsigned int i=0; i<ports.size(); ++i)
          {
              if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
              {
