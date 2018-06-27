@@ -92,7 +92,7 @@ void receive_player_position_client(std::vector<player> &players, sf::Packet pos
     }
 }
 
-void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText)
+void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText, std::vector<bullet> &clientBullets)
 {
     sf::Vector2f changingPosition;
     std::ostringstream messageType;
@@ -106,11 +106,23 @@ void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet pos
             {
                 bullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
             }
+
+        }
+    }
+    for(unsigned int i=0; i<clientBullets.size(); ++i)
+    {
+        if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
+        {
+            messageType<<"bulletClient"<<i;
+            if(messageType.str()==messageReceived)
+            {
+                clientBullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
+            }
         }
     }
 }
 
-void receive_position_packets_client(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets)
+void receive_position_packets_client(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets)
 {
 
     std::string bulletText ="bullet";
@@ -128,7 +140,7 @@ void receive_position_packets_client(sf::UdpSocket &socket, std::vector<player> 
         }
 
         receive_player_position_client(players, posPacket);
-        receive_bullet_position_client(bullets, posPacket, bulletText);
+        receive_bullet_position_client(bullets, posPacket, bulletText, clientBullets);
         receive_bullet_created_client(posPacket, bullets, players);
     }
 }
@@ -187,7 +199,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             bulletHit(serverBullets, players, celSize);
         }
 
-        receive_position_packets_client(socket, players, serverBullets);
+        receive_position_packets_client(socket, players, serverBullets, clientBullets);
         draw_everything(window, players, serverBullets, clientBullets, role, celSize);
     }
 }
