@@ -107,7 +107,10 @@ bool fire_able(int time)
     }
 }
 
-void draw_everything(sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role, const int celSize)
+void draw_everything(
+  sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role,
+  const int celSize)
+
 {
     window.clear();
 

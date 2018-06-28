@@ -286,8 +286,8 @@ void run_server_or_client(std::string const connectionType)
 
     /* initialize random seed: */
     srand (time(NULL));
-    unsigned short clientPort = rand() % 99999 + 2000;
-    assert(clientPort>2000);
+    unsigned short clientPort = (rand() % 99999) + 2001;
+    assert(clientPort>=2001);
     if(connectionType==serverCheckShort || connectionType==serverCheck)
     {
       std::string serverName = "server";

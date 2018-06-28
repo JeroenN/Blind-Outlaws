@@ -11,8 +11,58 @@
 #include "bullet.h"
 #include "initializing.h"
 #include "wall.h"
+
+void draw_everything(
+  sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role,
+  const int celSize, std::vector<bullet> otherClientBullets)
+
+{
+    window.clear();
+    for(int i=0; i<static_cast<int>(clientBullets.size()); ++i)
+    {
+       clientBullets[i].display(window);
+    }
+    for(int i=0; i<static_cast<int>(otherClientBullets.size()); ++i)
+    {
+       otherClientBullets[i].display(window);
+    }
+    for(int i=0; i<static_cast<int>(serverBullets.size()); ++i)
+    {
+       serverBullets[i].display(window);
+    }
+
+    //if(role == "s" || role =="spectator")
+    //{
+        for(int i=0; i<static_cast<int>(players.size()); ++i)
+        {
+            players[i].display(window);
+        }
+    /*}
+    if(role == "p" || role =="player")
+    {
+            players[0].display(window);
+    }*/
+    //Grid
+    for(int i=0; i<25; ++i)
+    {
+        sf::Vertex line[] =
+        {
+            sf::Vertex(sf::Vector2f(celSize*i, 0)),
+            sf::Vertex(sf::Vector2f(celSize*i, window.getSize().y))
+        };
+        sf::Vertex line2[] =
+        {
+            sf::Vertex(sf::Vector2f(0, celSize*i)),
+            sf::Vertex(sf::Vector2f(window.getSize().x, celSize*i))
+        };
+        window.draw(line, 2, sf::Lines);
+        window.draw(line2, 2, sf::Lines);
+    }
+    window.display();
+}
+
 //This is also a send function, should 2 or 3 smaller functions, future me is going to deal with that... in the future
-void shoot_bullet_client(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short port, std::vector<player> &players,
+void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short port, std::vector<player> &players,
                   bool &update, int &time, const int shooting_dir)
 {
     int bulletSpeedX=3;
@@ -60,7 +110,7 @@ void shoot_bullet_client(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigne
      }
 }
 
-void receive_bullet_created_client(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players)
+void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<bullet> &otherClientBullets, std::vector<player> &players)
 {
     std::string messageType=" ";
     int speedX=0;
@@ -71,10 +121,14 @@ void receive_bullet_created_client(sf::Packet bulletPacket,std::vector<bullet> &
         {
             bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY(), speedX, speedY));
         }
+        if(messageType=="createClientBullet")
+        {
+            otherClientBullets.push_back(bullet(10,10, players[0].getPosX(), players[0].getPosY(), speedX, speedY));
+        }
     }
 }
 
-void receive_player_position_client(std::vector<player> &players, sf::Packet posPacket)
+void receive_player_position(std::vector<player> &players, sf::Packet posPacket)
 {
     sf::Vector2f changingPosition;
     std::string messageType;
@@ -92,7 +146,7 @@ void receive_player_position_client(std::vector<player> &players, sf::Packet pos
     }
 }
 
-void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText, std::vector<bullet> &clientBullets)
+void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText, std::vector<bullet> &clientBullets)
 {
     sf::Vector2f changingPosition;
     std::ostringstream messageType;
@@ -122,7 +176,7 @@ void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet pos
     }
 }
 
-void receive_position_packets_client(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets)
+void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets, std::vector<bullet> &otherClientBullets)
 {
 
     std::string bulletText ="bullet";
@@ -139,13 +193,13 @@ void receive_position_packets_client(sf::UdpSocket &socket, std::vector<player> 
             //std::cout<<"whoops... some data wasn't received";
         }
 
-        receive_player_position_client(players, posPacket);
-        receive_bullet_position_client(bullets, posPacket, bulletText, clientBullets);
-        receive_bullet_created_client(posPacket, bullets, players);
+        receive_player_position(players, posPacket);
+        receive_bullet_position(bullets, posPacket, bulletText, clientBullets);
+        receive_bullet_created(posPacket, bullets, otherClientBullets, players);
     }
 }
 
-void send_player_position_client(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
+void send_player_position(sf::IpAddress ip, unsigned short port, const std::vector<player> &players)
 {
     std::string playerMessage ="player";
     sf::UdpSocket socket;
@@ -157,7 +211,7 @@ void send_player_position_client(sf::IpAddress ip, unsigned short port, const st
         //std::cout<<"whoops... some data wasn't sent";
     }
 }
-void send_position_bullet_client(const sf::IpAddress ip, const unsigned short port,
+void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
                           std::vector<bullet> &bullets)
 {
     std::ostringstream bulletMessage;
@@ -188,6 +242,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     int timeWalking=0;
     int timeShooting=0;
     std::vector<bullet> clientBullets{};
+    std::vector<bullet> otherClientBullets{};
     std::vector<bullet> serverBullets{};
     sf::Event Event;
     const sf::IpAddress serverIP="127.0.0.1"; //local server ip, there should be an option to input the server ip.
@@ -211,18 +266,18 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             sf::IpAddress recipient = serverIP;
             unsigned short serverPort = 2000;
             set_shooting_dir(shooting_dir);
-            shoot_bullet_client(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
+            shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
             if(player_check_walking(players, prevPosition)==true)
             {
-                send_player_position_client(recipient, serverPort, players);
+                send_player_position(recipient, serverPort, players);
             }
-            send_position_bullet_client(recipient, serverPort, clientBullets);
+            send_position_bullet(recipient, serverPort, clientBullets);
 
             bulletHit(serverBullets, players, celSize);
         }
 
-        receive_position_packets_client(socket, players, serverBullets, clientBullets);
-        draw_everything(window, players, serverBullets, clientBullets, role, celSize);
+        receive_position_packets(socket, players, serverBullets, clientBullets, otherClientBullets);
+        draw_everything(window, players, serverBullets, clientBullets, role, celSize, otherClientBullets);
     }
 }
 
