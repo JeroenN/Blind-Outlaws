@@ -444,8 +444,17 @@ void send_clients_bullet_created_to_all_clients(const sf::IpAddress ip, std::vec
 {
     if(bulletCreatedReceived==true)
     {
+        sf::UdpSocket socket;
+        sf::Packet posPacket;
         std::string message ="createClientBullet";
-
+        posPacket<<message;
+        for(unsigned i=0; i<ports.size(); ++i)
+        {
+            if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
+            {
+            //std::cout<<"whoops... some data wasn't sent";
+            }
+        }
 
 
     }
