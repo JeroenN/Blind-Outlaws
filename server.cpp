@@ -173,7 +173,7 @@ void receive_player_position(std::vector<player> &players, sf::Packet posPacket,
     sf::Vector2f changingPosition;
     std::string messageType;
 
-    if(posPacket>>changingPosition.x>>changingPosition.y>> messageType) //>> objectNumber -> needs to be added
+    if(posPacket>> messageType>>changingPosition.x>>changingPosition.y) //>> objectNumber -> needs to be added
     {
         if(messageType=="player")
         {
@@ -190,7 +190,7 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
     std::string messageReceived;
     for(unsigned int i=0; i<bullets.size(); ++i)
     {
-        if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
+        if(posPacket>> messageReceived>>changingPosition.x>>changingPosition.y)
         {
             messageType<<bulletText<<i;
             if(messageType.str()==messageReceived)
@@ -362,7 +362,7 @@ void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, c
     std::string playerMessage ="player";
     sf::UdpSocket socket;
     sf::Packet posPacket;
-    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
+    posPacket<<playerMessage<<players[0].getPosX() <<players[0].getPosY();//<<playerNumber;
 
     for(unsigned i=0; i<ports.size(); ++i)
     {
@@ -386,7 +386,7 @@ void send_position_bullet(const sf::IpAddress ip, const std::vector<unsigned sho
         for (unsigned i=0; i<bullets.size(); i++)
         {
             bulletMessage<<bulletText<<i;
-            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
+            posPacket<< bulletMessage.str()<<bullets[i].getPosX() << bullets[i].getPosY();
         }
         for(unsigned int i=0; i<ports.size(); ++i)
         {
@@ -404,7 +404,7 @@ void send_clients_players_position_to_all_clients(const bool playerWalkingReceiv
         std::string playerMessage ="otherPlayer";
         sf::UdpSocket socket;
         sf::Packet posPacket;
-        posPacket<<players[1].getPosX()<<players[1].getPosY()<<playerMessage;
+        posPacket<<playerMessage<<players[1].getPosX()<<players[1].getPosY();
 
         for(unsigned i=0; i<ports.size(); ++i)
         {
@@ -429,7 +429,7 @@ void send_clients_bullet_position_to_all_clients(const sf::IpAddress ip, std::ve
         for (unsigned i=0; i<bullets.size(); i++)
         {
             bulletMessage<<bulletText<<i;
-            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
+            posPacket<< bulletMessage.str()<<bullets[i].getPosX() << bullets[i].getPosY();
         }
         for(unsigned i=0; i<ports.size(); ++i)
         {
@@ -444,8 +444,17 @@ void send_clients_bullet_created_to_all_clients(const sf::IpAddress ip, std::vec
 {
     if(bulletCreatedReceived==true)
     {
+        sf::UdpSocket socket;
+        sf::Packet posPacket;
         std::string message ="createClientBullet";
-
+        posPacket<<message;
+        for(unsigned i=0; i<ports.size(); ++i)
+        {
+            if (socket.send(posPacket, ip, ports[i]) != sf::Socket::Done)
+            {
+            //std::cout<<"whoops... some data wasn't sent";
+            }
+        }
 
 
     }

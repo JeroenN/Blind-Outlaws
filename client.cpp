@@ -79,7 +79,7 @@ void receive_player_position_client(std::vector<player> &players, sf::Packet pos
     sf::Vector2f changingPosition;
     std::string messageType;
 
-    if(posPacket>>changingPosition.x>>changingPosition.y>> messageType) //>> objectNumber -> needs to be added
+    if(posPacket>> messageType>>changingPosition.x>>changingPosition.y) //>> objectNumber -> needs to be added
     {
         if(messageType=="player")
         {
@@ -99,7 +99,7 @@ void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet pos
     std::string messageReceived;
     for(unsigned int i=0; i<bullets.size(); ++i)
     {
-        if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
+        if(posPacket>> messageReceived>>changingPosition.x>>changingPosition.y)
         {
             messageType<<bulletText<<i;
             if(messageType.str()==messageReceived)
@@ -111,7 +111,7 @@ void receive_bullet_position_client(std::vector<bullet> &bullets, sf::Packet pos
     }
     for(unsigned int i=0; i<clientBullets.size(); ++i)
     {
-        if(posPacket>>changingPosition.x>>changingPosition.y>> messageReceived)
+        if(posPacket>> messageReceived>>changingPosition.x>>changingPosition.y)
         {
             messageType<<"bulletClient"<<i;
             if(messageType.str()==messageReceived)
@@ -150,7 +150,7 @@ void send_player_position_client(sf::IpAddress ip, unsigned short port, const st
     std::string playerMessage ="player";
     sf::UdpSocket socket;
     sf::Packet posPacket;
-    posPacket<<players[0].getPosX() <<players[0].getPosY()<< playerMessage;//<<playerNumber;
+    posPacket<<playerMessage<<players[0].getPosX() <<players[0].getPosY();//<<playerNumber;
 
     if (socket.send(posPacket, ip, port) != sf::Socket::Done)
     {
@@ -170,7 +170,7 @@ void send_position_bullet_client(const sf::IpAddress ip, const unsigned short po
         for (unsigned i=0; i<bullets.size(); i++)
         {
             bulletMessage<<bulletText<<i;
-            posPacket<<bullets[i].getPosX() << bullets[i].getPosY() << bulletMessage.str();
+            posPacket<< bulletMessage.str()<<bullets[i].getPosX() << bullets[i].getPosY();
         }
 
         if (socket.send(posPacket, ip, port) != sf::Socket::Done)
