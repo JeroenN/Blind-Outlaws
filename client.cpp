@@ -146,15 +146,17 @@ void receive_player_position(std::vector<player> &players, sf::Packet posPacket)
     }
 }
 
-void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,std::string bulletText, std::vector<bullet> &clientBullets)
+void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket, std::vector<bullet> &clientBullets, std::vector<bullet> &otherClientBullets)
 {
+    std::string bulletText ="bullet";
     sf::Vector2f changingPosition;
-    std::ostringstream messageType;
+    //std::ostringstream messageType;
     std::string messageReceived;
     for(unsigned int i=0; i<bullets.size(); ++i)
     {
         if(posPacket>> messageReceived>>changingPosition.x>>changingPosition.y)
         {
+            std::ostringstream messageType;
             messageType<<bulletText<<i;
             if(messageType.str()==messageReceived)
             {
@@ -163,14 +165,16 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
 
         }
     }
-    for(unsigned int i=0; i<clientBullets.size(); ++i)
+    for(unsigned int i=0; i<otherClientBullets.size(); ++i)
     {
         if(posPacket>> messageReceived>>changingPosition.x>>changingPosition.y)
         {
+            std::ostringstream messageType;
             messageType<<"bulletClient"<<i;
             if(messageType.str()==messageReceived)
             {
-                clientBullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
+                std::cout<<"X Position "<< messageType.str() << " :"<< changingPosition.x<<"\n";
+                otherClientBullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
             }
         }
     }
@@ -178,8 +182,6 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
 
 void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets, std::vector<bullet> &otherClientBullets)
 {
-
-    std::string bulletText ="bullet";
     sf::IpAddress sender;
     unsigned short port;
     sf::Packet posPacket;
@@ -194,7 +196,7 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
         }
 
         receive_player_position(players, posPacket);
-        receive_bullet_position(bullets, posPacket, bulletText, clientBullets);
+        receive_bullet_position(bullets, posPacket, clientBullets, otherClientBullets);
         receive_bullet_created(posPacket, bullets, otherClientBullets, players);
     }
 }
@@ -273,7 +275,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             }
             send_position_bullet(recipient, serverPort, clientBullets);
 
-            bulletHit(serverBullets, players, celSize);
+            //bulletHit(serverBullets, players, celSize);
         }
 
         receive_position_packets(socket, players, serverBullets, clientBullets, otherClientBullets);

@@ -3,6 +3,7 @@
 #include <cassert>
 #include <algorithm>
 #include <numeric>
+#include <QFile>
 
 void playerWalking(std::vector<player> &players, bool &update, int &time, const int celSize)
 {
@@ -73,7 +74,8 @@ void set_shooting_dir(int &shooting_dir)
   std::swap(v[3], v.back());
   v.pop_back();
 */
-void bulletHit(std::vector<bullet> &bullets, std::vector<player> players, const int celSize)
+
+bool bullet_hit(std::vector<bullet> &bullets, std::vector<player> players, const int celSize)
 {
       int playerCelX =players[0].getPosX()/celSize;
       int playerCelY = players[0].getPosY()/celSize;
@@ -84,13 +86,13 @@ void bulletHit(std::vector<bullet> &bullets, std::vector<player> players, const 
            int bulletCelY= bullets[i].getPosY()/celSize;
            if(playerCelX==bulletCelX && playerCelY==bulletCelY)
            {
-               std::swap(bullets[i], bullets.back());
-               bullets.pop_back();
+               //std::swap(bullets[i], bullets.back());
+               //bullets.pop_back();
                std::cout<<"HIT HIT HIT HIT!!!!!!!!!!!!!!!!!!!!! \n"<<std::flush;
+               return true;
            }
       }
-
-
+      return false;
       //std::pair<int, int> playerGridPos{playerPosX, playerPosY};
 }
 
@@ -106,10 +108,37 @@ bool fire_able(int time)
         return false;
     }
 }
+sf::Font load_font()
+{
+    sf::Font font;
+    //Save fonts locally
+    {
+        QFile f(":/fonts/Fonts/font.TTF");
+        f.copy("font.TTF");
+    }
+    if(!font.loadFromFile("font.TTF"))
+    {
+        // Error...
+    }
+    return font;
+}
+
+sf::Text create_text(sf::Font &font, const bool bulletHit)
+{
+    sf::Text text;
+    text.setFont(font);
+    if(bulletHit)
+    {
+        text.setString("YOU LOST");
+    }
+    text.setCharacterSize(100);
+    text.move(100.f, 200.f);
+    return text;
+}
 
 void draw_everything(
   sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role,
-  const int celSize)
+  const int celSize, const bool bulletHit)
 
 {
     window.clear();
@@ -151,9 +180,13 @@ void draw_everything(
         window.draw(line, 2, sf::Lines);
         window.draw(line2, 2, sf::Lines);
     }
+    sf::Font font = load_font();
+    sf::Text text =create_text(font, bulletHit);
+    // select the font
+
+    window.draw(text);
     window.display();
 }
-
 
 ///RECEIVE FUNCTIONS
 void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<player> &players, bool &bulletCreated)
@@ -277,12 +310,9 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
                     playerPortIP.insert(std::make_pair(clientPort, clientIpReceived));
                 }
             }
-
         }
     }
 }
-
-
 
 std::vector<player> makePlayers(int& amount_players, const int celSize) noexcept
 {
@@ -379,15 +409,14 @@ void send_player_position(sf::IpAddress ip, std::vector<unsigned short> ports, c
 void send_position_bullet(const sf::IpAddress ip, const std::vector<unsigned short> ports,
                           std::vector<bullet> &bullets)
 {
-    std::ostringstream bulletMessage;
-    std::string bulletText="bullet";
-
     sf::UdpSocket socket;
     sf::Packet posPacket;
     if(bullets.size()>0)
     {
         for (unsigned i=0; i<bullets.size(); i++)
-        {
+        {            
+            std::string bulletText="bullet";
+            std::ostringstream bulletMessage;
             bulletMessage<<bulletText<<i;
             posPacket<< bulletMessage.str()<<bullets[i].getPosX() << bullets[i].getPosY();
         }
@@ -421,9 +450,6 @@ void send_clients_players_position_to_all_clients(const bool playerWalkingReceiv
 void send_clients_bullet_position_to_all_clients(const sf::IpAddress ip, std::vector<unsigned short> ports,
                           std::vector<bullet> &bullets)
 {
-    std::ostringstream bulletMessage;
-    std::string bulletText="bulletClient";
-
     sf::UdpSocket socket;
     sf::Packet posPacket;
     if(bullets.size()>0)
@@ -431,6 +457,8 @@ void send_clients_bullet_position_to_all_clients(const sf::IpAddress ip, std::ve
         //packet << static_cast<sf::Uint32>(bullets.size());
         for (unsigned i=0; i<bullets.size(); i++)
         {
+            std::ostringstream bulletMessage;
+            std::string bulletText="bulletClient";
             bulletMessage<<bulletText<<i;
             posPacket<< bulletMessage.str()<<bullets[i].getPosX() << bullets[i].getPosY();
         }
@@ -526,6 +554,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     const std::string role =playerType.first;
     int timeWalking=10;
     int timeShooting=30;
+    bool bulletHit=false;
 
     std::vector<bullet> serverBullets{};
     std::vector<bullet> clientBullets{};
@@ -575,7 +604,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
 
         send_position_bullet(recipient, vectorClientPorts, serverBullets);
 
-        bulletHit(clientBullets, players, celSize);
+        bulletHit =bullet_hit(clientBullets, players, celSize);
      }
     bool playerWalkingReceived =false;
     bool bulletCreatedReceived =false;
@@ -585,6 +614,6 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     send_clients_bullet_position_to_all_clients(clientIP, vectorClientPorts, clientBullets);
     send_clients_bullet_created_to_all_clients(clientIP, vectorClientPorts,bulletCreatedReceived);
 
-    draw_everything(window, players, serverBullets, clientBullets, role, celSize);
+    draw_everything(window, players, serverBullets, clientBullets, role, celSize, bulletHit);
    }
 }

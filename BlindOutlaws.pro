@@ -1,7 +1,6 @@
 TEMPLATE = app
-CONFIG += console
+CONFIG += console core qt
 CONFIG -= app_bundle
-CONFIG -= qt
 
 SOURCES += main.cpp \
     server.cpp \
@@ -26,4 +25,7 @@ HEADERS += \
     initializing.h \
     client.h \
     wall.h
+
+RESOURCES += \
+    blind-outlaws.qrc
 
