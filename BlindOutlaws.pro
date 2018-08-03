@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     bullet.cpp \
     initializing.cpp \
     client.cpp \
-    wall.cpp
+    wall.cpp \
+    bulletcode.cpp
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 LIBS += -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
@@ -24,7 +25,8 @@ HEADERS += \
     bullet.h \
     initializing.h \
     client.h \
-    wall.h
+    wall.h \
+    bulletcode.h
 
 RESOURCES += \
     blind-outlaws.qrc

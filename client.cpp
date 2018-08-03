@@ -14,7 +14,7 @@
 
 void draw_everything(
   sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role,
-  const int celSize, std::vector<bullet> otherClientBullets)
+  const int celSize, std::vector<bullet> otherClientBullets, const int bulletsInGun)
 
 {
     window.clear();
@@ -43,6 +43,9 @@ void draw_everything(
             players[0].display(window);
     }*/
     //Grid
+    sf::Font font = load_font();
+    sf::Text text =create_text("bullets: ",font,10,10,20);
+    sf::Text textBullet =create_text(std::to_string(bulletsInGun),font,120,10,20);
     for(int i=0; i<25; ++i)
     {
         sf::Vertex line[] =
@@ -58,12 +61,14 @@ void draw_everything(
         window.draw(line, 2, sf::Lines);
         window.draw(line2, 2, sf::Lines);
     }
+    window.draw(text);
+    window.draw(textBullet);
     window.display();
 }
 
 //This is also a send function, should 2 or 3 smaller functions, future me is going to deal with that... in the future
 void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short port, std::vector<player> &players,
-                  bool &update, int &time, const int shooting_dir)
+                  bool &update, int &time, const int shooting_dir, int &bulletsInGun)
 {
     int bulletSpeedX=3;
     int bulletSpeedY=0;
@@ -89,6 +94,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      sf::Packet posPacket;
      if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true)
      {
+         bulletsInGun--;
          bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
@@ -248,7 +254,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     std::vector<bullet> serverBullets{};
     sf::Event Event;
     const sf::IpAddress serverIP="127.0.0.1"; //local server ip, there should be an option to input the server ip.
-
+    int bulletsInGun =3;
 
     sf::UdpSocket socket;
     socket.bind(clientPort);
@@ -268,7 +274,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             sf::IpAddress recipient = serverIP;
             unsigned short serverPort = 2000;
             set_shooting_dir(shooting_dir);
-            shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir);
+            shoot_bullet(clientBullets, recipient, serverPort,players, update, timeShooting, shooting_dir, bulletsInGun);
             if(player_check_walking(players, prevPosition)==true)
             {
                 send_player_position(recipient, serverPort, players);
@@ -279,7 +285,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
         }
 
         receive_position_packets(socket, players, serverBullets, clientBullets, otherClientBullets);
-        draw_everything(window, players, serverBullets, clientBullets, role, celSize, otherClientBullets);
+        draw_everything(window, players, serverBullets, clientBullets, role, celSize, otherClientBullets, bulletsInGun);
     }
 }
 

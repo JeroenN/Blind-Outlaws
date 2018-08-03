@@ -10,6 +10,8 @@
 #include "bullet.h"
 #include "client.h"
 
+sf::Font load_font();
+sf::Text create_text(const std::string textString,sf::Font &font, const int posX, const int posY, const int size);
 
 void receive_playerTypes_taken(sf::TcpSocket &TcpSocket, sf::TcpListener &listener, int &team1Taken, int &role1Taken, int &team2Taken, int &role2Taken);
 void create_window(const std::string windowName,sf::RenderWindow &window);

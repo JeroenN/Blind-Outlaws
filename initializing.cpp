@@ -13,7 +13,31 @@
 #include "server.h"
 #include "bullet.h"
 #include <cassert>
+#include <QFile>
 
+sf::Font load_font()
+{
+    sf::Font font;
+    //Save fonts locally
+    {
+        QFile f(":/fonts/Fonts/font.TTF");
+        f.copy("font.TTF");
+    }
+    if(!font.loadFromFile("font.TTF"))
+    {
+        // Error...
+    }
+    return font;
+}
+sf::Text create_text(const std::string textString,sf::Font &font, const int posX, const int posY, const int size)
+{
+    sf::Text text;
+    text.setFont(font);
+    text.setString(textString);
+    text.setCharacterSize(size);
+    text.move(posX, posY);
+    return text;
+}
 //First index will be the column
 //Second index will be the row
 /*using xy_grid = std::vector<std::vector<int>>;
