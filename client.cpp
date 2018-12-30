@@ -46,23 +46,24 @@ void draw_everything(
     sf::Font font = load_font();
     sf::Text text =create_text("bullets: ",font,10,10,20);
     sf::Text textBullet =create_text(std::to_string(bulletsInGun),font,120,10,20);
-    for(int i=0; i<25; ++i)
+    window.draw(textBullet);
+    window.draw(text);
+
+    for(int i=0; i<26; ++i)
     {
-        sf::Vertex line[] =
+        sf::Vertex horLine[] =
         {
             sf::Vertex(sf::Vector2f(celSize*i, 0)),
             sf::Vertex(sf::Vector2f(celSize*i, window.getSize().y))
         };
-        sf::Vertex line2[] =
+        sf::Vertex verLine[] =
         {
             sf::Vertex(sf::Vector2f(0, celSize*i)),
             sf::Vertex(sf::Vector2f(window.getSize().x, celSize*i))
         };
-        window.draw(line, 2, sf::Lines);
-        window.draw(line2, 2, sf::Lines);
+        window.draw(horLine, 2, sf::Lines);
+        window.draw(verLine, 2, sf::Lines);
     }
-    window.draw(text);
-    window.draw(textBullet);
     window.display();
 }
 
@@ -288,4 +289,5 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
         draw_everything(window, players, serverBullets, clientBullets, role, celSize, otherClientBullets, bulletsInGun);
     }
 }
+
 

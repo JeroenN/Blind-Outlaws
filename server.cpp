@@ -1,3 +1,4 @@
+
 #include "server.h"
 #include <sstream>
 #include <cassert>
@@ -113,7 +114,7 @@ bool fire_able(int time)
 
 void draw_everything(
   sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role,
-  const int celSize, const bool bulletHit)
+  const int celSize, const bool bulletHit, const int bulletsInGun)
 
 {
     window.clear();
@@ -140,27 +141,28 @@ void draw_everything(
             players[0].display(window);
     }*/
     //Grid
-    for(int i=0; i<25; ++i)
+    for(int i=0; i<26; ++i)
     {
-        sf::Vertex line[] =
+        sf::Vertex horLine[] =
         {
             sf::Vertex(sf::Vector2f(celSize*i, 0)),
             sf::Vertex(sf::Vector2f(celSize*i, window.getSize().y))
         };
-        sf::Vertex line2[] =
+        sf::Vertex verLine[] =
         {
             sf::Vertex(sf::Vector2f(0, celSize*i)),
             sf::Vertex(sf::Vector2f(window.getSize().x, celSize*i))
         };
-        window.draw(line, 2, sf::Lines);
-        window.draw(line2, 2, sf::Lines);
+        window.draw(horLine, 2, sf::Lines);
+        window.draw(verLine, 2, sf::Lines);
     }
     sf::Font font = load_font();
-
     sf::Text text =create_text("bullets: ",font,10,10,20);
-    // select the font
-
+    sf::Text textBullet =create_text(std::to_string(bulletsInGun),font,120,10,20);
+    window.draw(textBullet);
     window.draw(text);
+
+    // select the font
     window.display();
 }
 
@@ -276,7 +278,7 @@ void server_receive_ip_port(sf::TcpSocket &TcpSocket, sf::TcpListener &listener,
             }
 
             if(messageType=="IpPort")
-            {             
+            {
                 if(cIPandPortPacket>>cIP>>clientPort)
                 {
                     std::cout<<cIP<<"\n";
@@ -390,7 +392,7 @@ void send_position_bullet(const sf::IpAddress ip, const std::vector<unsigned sho
     if(bullets.size()>0)
     {
         for (unsigned i=0; i<bullets.size(); i++)
-        {            
+        {
             std::string bulletText="bullet";
             std::ostringstream bulletMessage;
             bulletMessage<<bulletText<<i;
@@ -469,7 +471,7 @@ void send_clients_bullet_created_to_all_clients(const sf::IpAddress ip, std::vec
 
 //This is also a send function, should 2 or 3 smaller functions, future me is going to deal with that... in the future
 void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, const std::vector<unsigned short> ports, std::vector<player> &players,
-                  bool &update, int &time, const int shooting_dir)
+                  bool &update, int &time, const int shooting_dir, int &bulletsInGun)
 {
     int bulletSpeedX=3;
     int bulletSpeedY=0;
@@ -495,6 +497,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, const std::vec
      sf::Packet posPacket;
      if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true)
      {
+         bulletsInGun--;
          bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
@@ -531,6 +534,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     int timeWalking=10;
     int timeShooting=30;
     bool bulletHit=false;
+    int bulletsInGun=3;
 
     std::vector<bullet> serverBullets{};
     std::vector<bullet> clientBullets{};
@@ -576,7 +580,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
         }
         set_shooting_dir(shooting_dir);
 
-        shoot_bullet(serverBullets, recipient, vectorClientPorts,players, update, timeShooting, shooting_dir);
+        shoot_bullet(serverBullets, recipient, vectorClientPorts,players, update, timeShooting, shooting_dir, bulletsInGun);
 
         send_position_bullet(recipient, vectorClientPorts, serverBullets);
 
@@ -590,6 +594,6 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     send_clients_bullet_position_to_all_clients(clientIP, vectorClientPorts, clientBullets);
     send_clients_bullet_created_to_all_clients(clientIP, vectorClientPorts,bulletCreatedReceived);
 
-    draw_everything(window, players, serverBullets, clientBullets, role, celSize, bulletHit);
+    draw_everything(window, players, serverBullets, clientBullets, role, celSize, bulletHit, bulletsInGun);
    }
 }

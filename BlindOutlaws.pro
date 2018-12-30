@@ -2,14 +2,16 @@ TEMPLATE = app
 CONFIG += console core qt
 CONFIG -= app_bundle
 
-SOURCES += main.cpp \
-    server.cpp \
+SOURCES += \
     player.cpp \
     bullet.cpp \
     initializing.cpp \
     client.cpp \
     wall.cpp \
-    bulletcode.cpp
+    bulletcode.cpp \
+    main.cpp \
+    server.cpp \
+    tiles.cpp
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 LIBS += -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
