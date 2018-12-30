@@ -1,4 +1,3 @@
-
 #include "server.h"
 #include <sstream>
 #include <cassert>
@@ -585,6 +584,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
         send_position_bullet(recipient, vectorClientPorts, serverBullets);
 
         bulletHit =bullet_hit(clientBullets, players, celSize);
+        bulletsInGun= reloadBullets(bulletsInGun);
      }
     bool playerWalkingReceived =false;
     bool bulletCreatedReceived =false;

@@ -5,6 +5,7 @@
 #include "initializing.h"
 #include "wall.h"
 #include "client.h"
+#include "bulletcode.h"
 #include "iostream"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
