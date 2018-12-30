@@ -13,19 +13,15 @@
 #include "wall.h"
 
 void draw_everything(
-  sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role,
-  const int celSize, std::vector<bullet> otherClientBullets, const int bulletsInGun)
-
+  sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets,
+  const int celSize, const int bulletsInGun)
 {
     window.clear();
     for(int i=0; i<static_cast<int>(clientBullets.size()); ++i)
     {
-       clientBullets[i].display(window);
+      clientBullets[i].display(window);
     }
-    for(int i=0; i<static_cast<int>(otherClientBullets.size()); ++i)
-    {
-       otherClientBullets[i].display(window);
-    }
+
     for(int i=0; i<static_cast<int>(serverBullets.size()); ++i)
     {
        serverBullets[i].display(window);
@@ -71,35 +67,14 @@ void draw_everything(
 void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short port, std::vector<player> &players,
                   bool &update, int &time, const int shooting_dir, int &bulletsInGun)
 {
-    int bulletSpeedX=3;
-    int bulletSpeedY=0;
-    switch(shooting_dir)
-    {
-        case 0:
-        bulletSpeedX=3;
-        bulletSpeedY=0;
-        break;
-        case 1:
-        bulletSpeedX=-3;
-        bulletSpeedY=0;
-        break;
-        case 2:
-        bulletSpeedX=0;
-        bulletSpeedY=-3;
-        break;
-        case 3:
-        bulletSpeedX=0;
-        bulletSpeedY=3;
-        break;
-    }
      sf::Packet posPacket;
      if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true && bulletsInGun>0)
      {
          bulletsInGun--;
-         bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
+        // bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
-         posPacket<<bulletMessage;
+         posPacket<<bulletMessage<<shooting_dir;
 
          if (socket.send(posPacket, ip, port) != sf::Socket::Done)
          {
@@ -130,6 +105,7 @@ void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets
         }
         if(messageType=="createClientBullet")
         {
+            //First send it to the server, then the sever sends it to the client, only then the bullet should show up.
             otherClientBullets.push_back(bullet(10,10, players[0].getPosX(), players[0].getPosY(), speedX, speedY));
         }
     }
@@ -187,7 +163,8 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
     }
 }
 
-void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets, std::vector<bullet> &otherClientBullets)
+void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets,
+                              std::vector<bullet> &otherClientBullets)
 {
     sf::IpAddress sender;
     unsigned short port;
@@ -220,7 +197,7 @@ void send_player_position(sf::IpAddress ip, unsigned short port, const std::vect
         //std::cout<<"whoops... some data wasn't sent";
     }
 }
-void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
+/*void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
                           std::vector<bullet> &bullets)
 {
     std::ostringstream bulletMessage;
@@ -241,7 +218,7 @@ void send_position_bullet(const sf::IpAddress ip, const unsigned short port,
             //std::cout<<"whoops... some data wasn't sent";
         }
     }
-}
+}*/
 
 void do_client(std::vector<player> &players, std::pair<std::string, int> playerType, const unsigned short clientPort, const int celSize, sf::RenderWindow &window)
 {
@@ -282,13 +259,13 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             {
                 send_player_position(recipient, serverPort, players);
             }
-            send_position_bullet(recipient, serverPort, clientBullets);
+            //send_position_bullet(recipient, serverPort, clientBullets);
             reloadBullets(bulletsInGun, reloadCounter);
             //bulletHit(serverBullets, players, celSize);
         }
 
         receive_position_packets(socket, players, serverBullets, clientBullets, otherClientBullets);
-        draw_everything(window, players, serverBullets, clientBullets, role, celSize, otherClientBullets, bulletsInGun);
+        draw_everything(window, players, serverBullets, clientBullets, celSize, bulletsInGun);
     }
 }
 

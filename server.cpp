@@ -108,9 +108,6 @@ bool fire_able(int time)
     }
 }
 
-
-
-
 void draw_everything(
   sf::RenderWindow &window, std::vector<player> &players, std::vector<bullet> &serverBullets, std::vector<bullet> &clientBullets, const std::string role,
   const int celSize, const bool bulletHit, const int bulletsInGun)
@@ -216,7 +213,6 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
 
 void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, bool &playerWalkingReceived, bool &bulletCreatedReceived)
 {
-
     std::string bulletText ="bullet";
     sf::IpAddress sender;
     unsigned short port;
@@ -327,7 +323,6 @@ void playerTypes_currently_selected(int &m_playersTeam1,int &roleTeam1, int &m_p
 
             if(vectorPlayerType[i].second == 2)
             {
-
                 m_playersTeam2+=1;
                 if(vectorPlayerType[i].first =="p" || vectorPlayerType[i].first =="player")
                 {
@@ -472,32 +467,12 @@ void send_clients_bullet_created_to_all_clients(const sf::IpAddress ip, std::vec
 void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, const std::vector<unsigned short> ports, std::vector<player> &players,
                   bool &update, int &time, const int shooting_dir, int &bulletsInGun)
 {
-    int bulletSpeedX=3;
-    int bulletSpeedY=0;
-    switch(shooting_dir)
-    {
-        case 0:
-        bulletSpeedX=3;
-        bulletSpeedY=0;
-        break;
-        case 1:
-        bulletSpeedX=-3;
-        bulletSpeedY=0;
-        break;
-        case 2:
-        bulletSpeedX=0;
-        bulletSpeedY=-3;
-        break;
-        case 3:
-        bulletSpeedX=0;
-        bulletSpeedY=3;
-        break;
-    }
+
      sf::Packet posPacket;
      if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true && bulletsInGun>0)
      {
          bulletsInGun--;
-         bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
+         bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX(shooting_dir), bulletSpeedY(shooting_dir)));
          std::string bulletMessage ="bulletCreated";
          sf::UdpSocket socket;
          posPacket<<bulletMessage;

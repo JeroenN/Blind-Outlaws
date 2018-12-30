@@ -27,3 +27,40 @@ void reloadBullets(int &bulletsInGun, int &reloadCounter)
        bulletsInGun =maxBulletsInGun;
     }
 }
+
+int bulletSpeedX(const int shooting_dir)
+{
+    switch(shooting_dir)
+    {
+        case 0:
+        return 3;
+        break;
+        case 1:
+        return -3;
+        break;
+        case 2:
+        return 0;
+        break;
+        case 3:
+        return 0;
+        break;
+    }
+}
+int bulletSpeedY(const int shooting_dir)
+{
+    switch(shooting_dir)
+    {
+        case 0:
+        return 0;
+        break;
+        case 1:
+        return 0;
+        break;
+        case 2:
+        return -3;
+        break;
+        case 3:
+        return 3;
+        break;
+    }
+}
