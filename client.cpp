@@ -93,7 +93,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
         break;
     }
      sf::Packet posPacket;
-     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true)
+     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true && bulletsInGun>0)
      {
          bulletsInGun--;
          bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
@@ -256,6 +256,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     sf::Event Event;
     const sf::IpAddress serverIP="127.0.0.1"; //local server ip, there should be an option to input the server ip.
     int bulletsInGun =3;
+    int reloadCounter=60;
 
     sf::UdpSocket socket;
     socket.bind(clientPort);
@@ -263,6 +264,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
 
     while(window.isOpen())
     {
+        ++reloadCounter;
         window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape the window closes
 
         if(role =="p"|| role == "player")
@@ -281,7 +283,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
                 send_player_position(recipient, serverPort, players);
             }
             send_position_bullet(recipient, serverPort, clientBullets);
-
+            reloadBullets(bulletsInGun, reloadCounter);
             //bulletHit(serverBullets, players, celSize);
         }
 

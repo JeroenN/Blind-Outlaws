@@ -12,36 +12,36 @@ void playerWalking(std::vector<player> &players, bool &update, int &time, const 
 
     if(update==true&& time>10)
     {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-            {
-                    time=0;
-                    posX+=celSize;
-                    players[0].setPlayerPosition(posX, posY);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-            {
-                   time=0;
-                    posX-=celSize;
-                   players[0].setPlayerPosition(posX, posY);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-            {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
+            || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        {
                 time=0;
-                posY-=celSize;
+                posX+=celSize;
                 players[0].setPlayerPosition(posX, posY);
-
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
-                || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-            {
-                time=0;
-                posY+=celSize;
-                players[0].setPlayerPosition(posX, posY);
-            }
         }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
+            || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        {
+               time=0;
+               posX-=celSize;
+               players[0].setPlayerPosition(posX, posY);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
+            || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        {
+            time=0;
+            posY-=celSize;
+            players[0].setPlayerPosition(posX, posY);
+
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
+            || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        {
+            time=0;
+            posY+=celSize;
+            players[0].setPlayerPosition(posX, posY);
+        }
+    }
 }
 
 void set_shooting_dir(int &shooting_dir)
@@ -494,7 +494,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, const std::vec
         break;
     }
      sf::Packet posPacket;
-     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true)
+     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && update==true && fire_able(time)==true && bulletsInGun>0)
      {
          bulletsInGun--;
          bullets.push_back(bullet(10,10, players[0].getPosX()+10, players[0].getPosY()+10, bulletSpeedX, bulletSpeedY));
@@ -532,6 +532,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     const std::string role =playerType.first;
     int timeWalking=10;
     int timeShooting=30;
+    int reloadCounter=60;
     bool bulletHit=false;
     int bulletsInGun=3;
 
@@ -558,7 +559,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     while(window.isOpen())
     {
     window_events(window, Event, update); //selecting and deselecting the window and if the user presses escape, the window closes
-
+    ++reloadCounter;
     ++timeWalking;
     ++timeShooting;
     bool tcpMessageReceived=false;
@@ -584,7 +585,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
         send_position_bullet(recipient, vectorClientPorts, serverBullets);
 
         bulletHit =bullet_hit(clientBullets, players, celSize);
-        bulletsInGun= reloadBullets(bulletsInGun);
+        reloadBullets(bulletsInGun, reloadCounter);
      }
     bool playerWalkingReceived =false;
     bool bulletCreatedReceived =false;

@@ -11,7 +11,7 @@
 #include "bullet.h"
 #include "client.h"
 
-int reloadBullets(int &bulletsInGun);
+void reloadBullets(int &bulletsInGun,int &reloadCounter);
 
 #endif // BULLETCODE_H
 

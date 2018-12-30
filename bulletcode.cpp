@@ -15,13 +15,15 @@
 #include <cassert>
 #include <QFile>
 
-int reloadBullets(int &bulletsInGun)
+void reloadBullets(int &bulletsInGun, int &reloadCounter)
 {
     const int maxBulletsInGun=3;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::R))
     {
-        std::cout<<"reload";
-        return maxBulletsInGun;
+        reloadCounter=0;
     }
-    return bulletsInGun;
+    if(reloadCounter==60)
+    {
+       bulletsInGun =maxBulletsInGun;
+    }
 }
