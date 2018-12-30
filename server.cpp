@@ -168,12 +168,14 @@ void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets
     std::string messageType=" ";
     int speedX=0;
     int speedY=0;
-    if(bulletPacket>>messageType)
+    int dir;
+    if(bulletPacket>>messageType>>dir)
     {
         if(messageType=="bulletCreated")
         {
             bulletCreated=true;
-            bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY(), speedX, speedY));
+            std::cout<<"dir: " << dir << "\n";
+            bullets.push_back(bullet(10,10, players[1].getPosX(), players[1].getPosY(), bulletSpeedX(dir), bulletSpeedY(dir)));
         }
     }
 }
@@ -485,13 +487,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, const std::vec
          }
          time=0;
      }
-     if(bullets.size()>0)
-     {
-        for(unsigned int i=0; i<bullets.size(); ++i)
-        {
-            bullets[i].moveBullet();
-        }
-     }
+     moveAllBullets(bullets);
 }
 
 void do_server(std::vector<player> &players,std::pair<std::string,int> playerType, const int celSize, sf::RenderWindow &window)
@@ -566,6 +562,7 @@ void do_server(std::vector<player> &players,std::pair<std::string,int> playerTyp
     bool bulletCreatedReceived =false;
     receive_position_packets(socket, players, clientBullets, playerWalkingReceived, bulletCreatedReceived);
 
+    moveAllBullets(clientBullets);
     send_clients_players_position_to_all_clients(playerWalkingReceived, players, clientIP, vectorClientPorts);
     send_clients_bullet_position_to_all_clients(clientIP, vectorClientPorts, clientBullets);
     send_clients_bullet_created_to_all_clients(clientIP, vectorClientPorts,bulletCreatedReceived);

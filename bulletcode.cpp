@@ -64,3 +64,14 @@ int bulletSpeedY(const int shooting_dir)
         break;
     }
 }
+
+void moveAllBullets(std::vector<bullet> &bullets)
+{
+    if(bullets.size()>0)
+    {
+       for(unsigned int i=0; i<bullets.size(); ++i)
+       {
+           bullets[i].moveBullet();
+       }
+    }
+}

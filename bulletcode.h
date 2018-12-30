@@ -14,6 +14,6 @@
 void reloadBullets(int &bulletsInGun,int &reloadCounter);
 int bulletSpeedX(const int shooting_dir);
 int bulletSpeedY(const int shooting_dir);
-
+void moveAllBullets(std::vector<bullet> &bullets);
 #endif // BULLETCODE_H
 
