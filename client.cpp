@@ -92,7 +92,7 @@ void shoot_bullet(std::vector<bullet> &bullets,sf::IpAddress &ip, unsigned short
      }
 }
 
-void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<bullet> &otherClientBullets, std::vector<player> &players)
+void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets, std::vector<bullet> &clientBullets, std::vector<player> &players)
 {
     std::string messageType=" ";
     int speedX=0;
@@ -106,7 +106,7 @@ void receive_bullet_created(sf::Packet bulletPacket,std::vector<bullet> &bullets
         if(messageType=="createClientBullet")
         {
             //First send it to the server, then the sever sends it to the client, only then the bullet should show up.
-            otherClientBullets.push_back(bullet(10,10, players[0].getPosX(), players[0].getPosY(), speedX, speedY));
+            clientBullets.push_back(bullet(10,10, players[0].getPosX(), players[0].getPosY(), speedX, speedY));
         }
     }
 }
@@ -129,7 +129,7 @@ void receive_player_position(std::vector<player> &players, sf::Packet posPacket)
     }
 }
 
-void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket, std::vector<bullet> &clientBullets, std::vector<bullet> &otherClientBullets)
+void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket, std::vector<bullet> &clientBullets)
 {
     std::string bulletText ="bullet";
     sf::Vector2f changingPosition;
@@ -148,7 +148,7 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
 
         }
     }
-    for(unsigned int i=0; i<otherClientBullets.size(); ++i)
+    for(unsigned int i=0; i<clientBullets.size(); ++i)
     {
         if(posPacket>> messageReceived>>changingPosition.x>>changingPosition.y)
         {
@@ -157,14 +157,13 @@ void receive_bullet_position(std::vector<bullet> &bullets, sf::Packet posPacket,
             if(messageType.str()==messageReceived)
             {
                 std::cout<<"X Position "<< messageType.str() << " :"<< changingPosition.x<<"\n";
-                otherClientBullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
+                clientBullets[i].setBulletPosition(changingPosition.x, changingPosition.y);
             }
         }
     }
 }
 
-void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets,
-                              std::vector<bullet> &otherClientBullets)
+void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &players, std::vector<bullet> &bullets, std::vector<bullet> &clientBullets)
 {
     sf::IpAddress sender;
     unsigned short port;
@@ -180,8 +179,8 @@ void receive_position_packets(sf::UdpSocket &socket, std::vector<player> &player
         }
 
         receive_player_position(players, posPacket);
-        receive_bullet_position(bullets, posPacket, clientBullets, otherClientBullets);
-        receive_bullet_created(posPacket, bullets, otherClientBullets, players);
+        receive_bullet_position(bullets, posPacket, clientBullets);
+        receive_bullet_created(posPacket, bullets, clientBullets, players);
     }
 }
 
@@ -228,7 +227,6 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
     int timeWalking=0;
     int timeShooting=0;
     std::vector<bullet> clientBullets{};
-    std::vector<bullet> otherClientBullets{};
     std::vector<bullet> serverBullets{};
     sf::Event Event;
     const sf::IpAddress serverIP="127.0.0.1"; //local server ip, there should be an option to input the server ip.
@@ -264,7 +262,7 @@ void do_client(std::vector<player> &players, std::pair<std::string, int> playerT
             //bulletHit(serverBullets, players, celSize);
         }
 
-        receive_position_packets(socket, players, serverBullets, clientBullets, otherClientBullets);
+        receive_position_packets(socket, players, serverBullets, clientBullets);
         draw_everything(window, players, serverBullets, clientBullets, celSize, bulletsInGun);
     }
 }
